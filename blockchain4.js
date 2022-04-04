@@ -6,7 +6,7 @@ const ec = new EC('secp256k1')
 //const {PartitionedBloomFilter} = require('bloom-filters')
 //create a PartitionedBloomFilter of size 10 with 5 hash functions
 //const filter = new PartitionedBloomFiltr(10, 5)
-
+///
 const {
   MerkleTree
 } = require('merkletreejs')
@@ -26,7 +26,7 @@ class Transaction {
     this.amount = amount
     this.timestamp = Date.now()
   }
-  
+
   /**
    * Creates a SHA256 hash of the transaction
    *
