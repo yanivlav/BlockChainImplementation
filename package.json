@@ -9,7 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bloom-filters": "^3.0.0",
     "crypto-js": "^4.1.1",
-    "elliptic": "^6.5.4"
+    "elliptic": "^6.5.4",
+    "merkletreejs": "^0.2.31"
   }
 }

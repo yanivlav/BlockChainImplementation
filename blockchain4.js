@@ -3,14 +3,15 @@ const SHA256 = require('crypto-js/sha256')
 const EC = require('elliptic').ec
 const ec = new EC('secp256k1')
 
-//const {PartitionedBloomFilter} = require('bloom-filters')
-//create a PartitionedBloomFilter of size 10 with 5 hash functions
-//const filter = new PartitionedBloomFiltr(10, 5)
-///
 const {
   MerkleTree
 } = require('merkletreejs')
 
+const {
+  PartitionedBloomFilter
+} = require('bloom-filters')
+////create a PartitionedBloomFilter of size 10 with 5 hash functions
+//const filter = new PartitionedBloomFiltr(10, 5)
 
 
 class Transaction {
@@ -66,6 +67,7 @@ class Transaction {
     // If the transaction doesn't have a from address we assume it's a
     // mining reward and that it's valid. You could verify this in a
     // different way (special field for instance)
+    
     if (this.fromAddress === null) return true
     if (!this.signature || this.signature.length === 0) {
       throw new Error('No signature in the transaction')
@@ -75,7 +77,7 @@ class Transaction {
     return publicKey.verify(this.calculateHash(), this.signature)
   }
 
-}//Transaction
+} //Transaction
 
 class Block {
 
@@ -90,13 +92,13 @@ class Block {
     this.transactions = transactions
     this.hash = this.calculateHash()
     this.nonce = 0
-
-    /*
-    ////Miner should run these
-      // const leaves = transactions.map(x => SHA256(x))
-      // this.tree = new MerkleTree(leaves, SHA256)
-      // this.root = tree.getRoot().toString('hex')
-
+/* 
+    //C
+    const leaves = transactions.map(x => SHA256(x))// x.hash?
+    this.tree = new MerkleTree(leaves, SHA256)
+    this.root = tree.getRoot().toString('hex')
+ */
+  /*
     ////Add a new transaction as leaf
       // leaf = SHA256('a') 
 
@@ -152,7 +154,7 @@ class Block {
    * @returns {boolean}
    */
   hasValidTransaction() {
-    for (const tx of this.transactions) {
+    for (const tx of this.transactions) {// < 
       if (!tx.isValid()) {
         return false
       }
@@ -161,13 +163,13 @@ class Block {
     return true
   }
 
-}//Block
+} //Block
 
 class Blockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()] //list
     this.difficulty = 2
-    this.pendingTransactions = [] // new MerkleTree() // in eth 3 Trie for state,recipe,trans
+    this.pendingTransactions = [] 
     this.miningReward = 100
   }
 
@@ -192,17 +194,18 @@ class Blockchain {
    * Takes all the pending transactions, puts them in a Block and starts the
    * mining process. It also adds a transaction to send the mining reward to
    * the given address.
-   *
+   * //Calls to block.mineBlock()
    * @param {string} miningRewardAddress
    */
   minePendingTransactions(miningRewardAddress) {
-    //Reward for the miner  
+    //Reward for the miner
+    //Takes all the pending transactions, add the new Reward  
     const rewardTX = new Transaction(null, miningRewardAddress, this.miningReward)
+
     this.pendingTransactions.push(rewardTX) //change to markle tree push
-    //
+    
+    //Creating a new block object and initiate mining process on the new block with the difficulty
     let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash)
-
-
     block.mineBlock(this.difficulty)
     console.log('Block successfully mines!')
     this.chain.push(block)
@@ -237,7 +240,7 @@ class Blockchain {
    *
    * @returns {boolean}
    */
-  isChainValid() {
+  isChainValid() {//Done after new Block is created
 
     // Check if the Genesis block hasn't been tampered with by comparing
     // the output of createGenesisBlock with the first block on our chain
@@ -277,19 +280,19 @@ class Blockchain {
    *
    * @param {Transaction} transaction
    */
-  /* addTransaction(transaction){
-      if(!transaction.fromAddress|| !transaction.toAddress){
+   addTransaction(transaction){
+      if(!transaction.fromAddress || !transaction.toAddress){
         throw new Error('Transaction must have from and to addresses')
       }
       if(!transaction.isValid()){
         throw new Error('Cannont add invalid transaction to the chain')
 
       }
-      /////// more checking functions row 190 - 216
+/*       /////// more checking functions row 190 - 216
       ////https://github.com/Savjee/SavjeeCoin/blob/master/src/blockchain.js#L58
         this.pendingTransactions.push(transaction)
-        debug('transaction added: %s', transaction);//for debug
-    } */
+        debug('transaction added: %s', transaction);//for debug */
+    } 
 
   /**Was added from https://github.com/Savjee/SavjeeCoin/blob/master/src/blockchain.js#L223
    * Returns the balance of a given wallet address.
@@ -323,7 +326,7 @@ class Blockchain {
     }
     */
 
-}//Blockchain
+} //Blockchain
 
 module.exports.Blockchain = Blockchain
 module.exports.Block = Block
