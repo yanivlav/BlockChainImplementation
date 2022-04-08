@@ -83,15 +83,18 @@ class Block {
 
   /**
    * @param {number} timestamp
-   * @param {Transaction[]} transactions
+   * @param {Transaction[]} transactions//MerkleTree
    * @param {string} previousHash
    */
-  constructor(timestamp, transactions, previousHash = '') {
+  constructor(timestamp, transactions, previousHash = '', merkleRoot) {
     this.previousHash = previousHash
+    this.merkleRoot = merkleRoot
     this.timestamp = timestamp
     this.transactions = transactions
     this.hash = this.calculateHash()
     this.nonce = 0
+    
+    
 /* 
     //C
     const leaves = transactions.map(x => SHA256(x))// x.hash?
@@ -170,7 +173,7 @@ class Blockchain {
     this.chain = [this.createGenesisBlock()] //list
     this.difficulty = 2
     this.pendingTransactions = [] 
-    this.miningReward = 100
+    this.miningReward = 20
   }
 
   /**
@@ -201,15 +204,32 @@ class Blockchain {
     //Reward for the miner
     //Takes all the pending transactions, add the new Reward  
     const rewardTX = new Transaction(null, miningRewardAddress, this.miningReward)
-
-    this.pendingTransactions.push(rewardTX) //change to markle tree push
+    this.pendingTransactions.push(rewardTX) 
+   //miner reward
+    const pool = []
+    pool.push(this.pendingTransactions.pop())
+    pool.unshift(this.pendingTransactions.shift())
+    pool.unshift(this.pendingTransactions.shift())
+    pool.unshift(this.pendingTransactions.shift())
+    //mempool of 3 transactions as FIFO
+    // for (let i = 0; i < 3; i++) {
+    //   if(this.pendingTransactions){
+    //     pool.unshift(this.pendingTransactions.shift())
+    //   }
     
+  
+
+    //merkle tree
+    const leaves = pool.map(x => SHA256(x))
+    const tree = new MerkleTree(leaves, SHA256)
+    const root = tree.getRoot().toString('hex')
+
     //Creating a new block object and initiate mining process on the new block with the difficulty
-    let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash)
+    let block = new Block(Date.now(), pool, this.getLatestBlock().hash, root)
     block.mineBlock(this.difficulty)
     console.log('Block successfully mines!')
     this.chain.push(block)
-    this.pendingTransactions = []
+    //this.pendingTransactions = []
   }
 
   /**
