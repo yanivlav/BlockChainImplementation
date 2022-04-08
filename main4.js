@@ -1,4 +1,4 @@
-const {Blockchain,Block,Transaction}=require('./blockchain4.js')
+const {Blockchain,Block,Transaction}=require('./blockchain4bar.js')
 const EC = require('elliptic').ec
 const ec = new EC('secp256k1')
 
@@ -15,25 +15,30 @@ const minerWalletAddress=minerKey.getPublic('hex')
 
 let micaCoin=new Blockchain()
 
-const tx1=new Transaction(barWalletAddress,yanivWalletAddress,10)
-tx1.signTransaction(barKey)
+const tx1=new Transaction(minerWalletAddress,yanivWalletAddress,100)
+tx1.signTransaction(minerKey)
 micaCoin.addTransaction(tx1)
 
-const tx2=new Transaction(yanivWalletAddress,barWalletAddress,5)
-tx2.signTransaction(yanivKey)
-micaCoin.addTransaction(tx2)
+micaCoin.minePendingTransactions(minerWalletAddress)
 
+const tx2=new Transaction(minerWalletAddress,barWalletAddress,100)
+tx2.signTransaction(minerKey)
+micaCoin.addTransaction(tx2)
 
 micaCoin.minePendingTransactions(minerWalletAddress)
  
+
+console.log(JSON.stringify(micaCoin, null, 4))
 console.log('\ Balance of miner ', micaCoin.getBalanceOfAddress(minerWalletAddress))
 console.log('\ Balance of bar ', micaCoin.getBalanceOfAddress(barWalletAddress))
 console.log('\ Balance of yaniv ', micaCoin.getBalanceOfAddress(yanivWalletAddress))
 
-console.log(JSON.stringify(micaCoin, null, 4))
 
 
 
+arr = [4,2,3,1,5,6]
+arr.reverse()
+console.log(arr.pop())
 
 
 
