@@ -38,8 +38,6 @@ calculateHash(){return SHA256(this.fromAddress+this.toAddress+this.amount+this.t
 }
 
 class Block{
-
-
 // constructor(timestamp,transactions,previousHash='',root,tree,filter){
     constructor(timestamp,transactions,previousHash='',root,tree){
     this.previousHash=previousHash
@@ -114,9 +112,6 @@ class Blockchain{
       //     filter.add(x)
       // }
 
-      
-
-// const trans of block.transactions
 
       let block=new Block(Date.now(),memPool,this.getLatestBlock().hash, root, tree)
       // let block=new Block(Date.now(),this.pendingTransactions,this.getLatestBlock().hash, root, tree, filter)
@@ -307,16 +302,16 @@ module.exports.Transaction=Transaction
 //     //   newBlock.mineBlock(this.difficulty)
 //     //   this.chain.push(newBlock)
 //     // }
-//     minePendingTransactions(miningRewardAddress){
-//       const rewardTX =new Transaction(null,miningRewardAddress,this.miningReward)
-//       this.pendingTransactions.push(rewardTX)
+    minePendingTransactions(miningRewardAddress){
+      const rewardTX = new Transaction(null,miningRewardAddress,this.miningReward)
+      this.pendingTransactions.push(rewardTX)
       
-//       let block=new Block(Date.now(),this.pendingTransactions,this.getLatestBlock().hash)
-//       block.mineBlock(this.difficulty)
-//       console.log('Block successfully mines!')
-//       this.chain.push(block)
-//       this.pendingTransactions=[]
-//     }
+      let block=new Block(Date.now(),this.pendingTransactions,this.getLatestBlock().hash)
+      block.mineBlock(this.difficulty)
+      console.log('Block successfully mines!')
+      this.chain.push(block)
+      this.pendingTransactions=[]
+    }
 
 //     getBalanceOfAddress(address){
 //       let balance=0

@@ -4,14 +4,11 @@
   const {MerkleTree} = require('merkletreejs')
   const {PartitionedBloomFilter} = require('bloom-filters')
 
-
-
   class Transaction{
-    constructor(fromAddress,toAddress,amount, com){
-      this.fee = 2
+    constructor(fromAddress,toAddress,amount){
       this.fromAddress=fromAddress
       this.toAddress=toAddress
-      this.amount = amount
+      this.amount=amount
       this.timestamp=Date.now()
   }
   calculateHash(){return SHA256(this.fromAddress+this.toAddress+this.amount+this.timestamp).toString()}
@@ -37,7 +34,7 @@
   }
 
   class Block{
-  constructor(timestamp,transactions,previousHash='',tree,root){//,filter){
+  constructor(timestamp,transactions,previousHash='',tree,root){
   // constructor(timestamp,transactions,previousHash=''){
 
     this.previousHash=previousHash
@@ -47,7 +44,6 @@
     this.nonce=0
     this.root=root
     this.tree=tree
-    //this.filter=filter
   }
   calculateHash(){//add root and tree
   return SHA256(this.previousHash+this.timestamp+JSON.stringify(this.transactions)+this.nonce).toString()
@@ -75,11 +71,10 @@
   class Blockchain{
     constructor(){
         this.chain=[this.createGenesisBlock()]
-        this.difficulty=3
+        this.difficulty=2
         this.pendingTransactions=[]
-        this.sumCoinsBurned=0
         this.memPool=[]
-        this.miningReward=20
+        this.miningReward=100
     }
 
     createGenesisBlock(){
@@ -93,11 +88,10 @@
     minePendingTransactions(miningRewardAddress){
     const rewardTX = new Transaction(null,miningRewardAddress,this.miningReward)
     this.memPool.push(rewardTX)
-
+    // this.pendingTransactions.push(rewardTX)
     let j=0
     while(this.pendingTransactions.length>0 && j<3 ){
-      let trans = this.pendingTransactions.shift()
-      this.memPool.push(trans)
+      this.memPool.push(this.pendingTransactions.shift())
       j++;
     }
 
@@ -105,19 +99,9 @@
     const tree = new MerkleTree(leaves, SHA256)
     const root = tree.getRoot().toString('hex')
 
-    // const filter = new PartitionedBloomFilter(10, 5)
-    // filter.add(rewardTX.signature)
-
-    // const hashTx=this.calculateHash()
-    // const sig=signingKey.sign(hashTx,'base64')
-    // this.signature=sig.toDER('hex')
-      // for (const x of memPool){
-      //     // console.log(x) ------------------------
-      //     // sumCoinsMinded+= x.amount --------------------------------
-      //     filter.add(x)
-      // }
+    //add bloom filter
     
-    let block=new Block(Date.now(),this.memPool,this.getLatestBlock().hash, tree, root)//, filter)
+    let block=new Block(Date.now(),this.memPool,this.getLatestBlock().hash, tree, root)
     block.mineBlock(this.difficulty)
     console.log('Block successfully mines!')
     this.chain.push(block)
@@ -147,10 +131,7 @@
         throw new Error('Cannont add invalid transaction to the chain')
 
       }
-      console.log("transaction amount is:" + transaction.amount)
-      this.sumCoinsBurned += 2
-      transaction.amount -= transaction.fee
-      this.pendingTransactions.push(transaction)
+        this.pendingTransactions.push(transaction)
     } 
 
 
