@@ -1,4 +1,4 @@
-const {Blockchain,Block,Transaction}=require('./blockchain4bar.js')
+const {Blockchain,Block,Transaction}=require('./blockchain4.js')
 const EC = require('elliptic').ec
 const ec = new EC('secp256k1')
 
@@ -26,7 +26,34 @@ tx2.signTransaction(minerKey)
 micaCoin.addTransaction(tx2)
 
 micaCoin.minePendingTransactions(minerWalletAddress)
- 
+
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+
+let myRandTransaction = 0 
+getRandomInt(micaCoin.getBalanceOfAddress(barWalletAddress))
+
+initiateTransactionArray = []
+for (let i=0; i<30; i++)
+{
+    if(i%2){
+        myRandTransaction = getRandomInt(micaCoin.getBalanceOfAddress(barWalletAddress))
+        initiateTransactionArray[i] = new Transaction(barrWalletAddress,yanivWalletAddress,myRandTransaction)
+        initiateTransactionArray[i].signTransaction(barKey)
+        micaCoin.addTransaction(initiateTransactionArray[i])
+    }
+    else
+    {
+        myRandTransaction = getRandomInt(micaCoin.getBalanceOfAddress(yanivWalletAddress))
+        initiateTransactionArray[i]=new Transaction(yanivWalletAddress,barWalletAddress,myRandTransaction)
+        initiateTransactionArray[i].signTransaction(yannivKey)
+        micaCoin.addTransaction(initiateTransactionArray[i])
+    }
+}
+
 
 console.log(JSON.stringify(micaCoin, null, 4))
 console.log('\ Balance of miner ', micaCoin.getBalanceOfAddress(minerWalletAddress))

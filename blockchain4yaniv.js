@@ -216,7 +216,6 @@ class Blockchain {
     //   if(this.pendingTransactions){
     //     pool.unshift(this.pendingTransactions.shift())
     //   }
-    
   
 
     //merkle tree
