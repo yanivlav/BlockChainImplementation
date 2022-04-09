@@ -104,7 +104,7 @@ class Blockchain{
             balance -= trans.amount
           }
           if(trans.toAddress===address){
-            balance +=trans.amount
+            balance += trans.amount
           }
         }
       }

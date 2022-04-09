@@ -4,11 +4,9 @@ const ec = new EC('secp256k1')
 const {MerkleTree} = require('merkletreejs')
 const {PartitionedBloomFilter} = require('bloom-filters')
 
-const sumCoinsMinded = 0;
-const sumTotalCoins = 0;
-const sumCoinsBurned = 0;
-
-const transactions = new Transaction []
+let sumCoinsMinded = 0;
+let sumTotalCoins = 0;
+let sumCoinsBurned = 0;
 
 class Transaction{
     constructor(fromAddress,toAddress,amount){
@@ -17,7 +15,6 @@ class Transaction{
       this.amount=amount
       this.timestamp=Date.now()
   }
-
 calculateHash(){return SHA256(this.fromAddress+this.toAddress+this.amount+this.timestamp).toString()}
   signTransaction(signingKey){
     if(signingKey.getPublic('hex')!==this.fromAddress){
@@ -33,14 +30,18 @@ calculateHash(){return SHA256(this.fromAddress+this.toAddress+this.amount+this.t
   if(!this.signature||this.signature.length===0){
    throw new Error('No signature in the transaction')
   }
+   
   const publicKey=ec.keyFromPublic(this.fromAddress,'hex')
   return publicKey.verify(this.calculateHash(),this.signature)
 }
+
 }
 
 class Block{
-constructor(timestamp,transactions,previousHash='',root,tree,filter){
-    
+
+
+// constructor(timestamp,transactions,previousHash='',root,tree,filter){
+    constructor(timestamp,transactions,previousHash='',root,tree){
     this.previousHash=previousHash
     this.timestamp=timestamp
     this.transactions=transactions
@@ -48,7 +49,7 @@ constructor(timestamp,transactions,previousHash='',root,tree,filter){
     this.nonce=0
     this.root=root
     this.tree=tree
-    this.filter=filter
+    // this.filter=filter
 }
 
 
@@ -93,29 +94,32 @@ class Blockchain{
     }
 
     minePendingTransactions(miningRewardAddress){
+      let memPool = []
       const rewardTX = new Transaction(null,miningRewardAddress,this.miningReward)
-      this.transToBlock.push(rewardTX)
-      filter.add(rewardTX)
+      memPool.push(rewardTX)
 
-      let transToBlock = []
       for (let i = 0; i<3; i++){
-        let trans = this.pendingTransactions.shift()
-        transToBlock.push(trans)
-        filter.add(trans)
-
-        sumCoinsMinded += trans.amount;
-        // Question - now every trans is in the bloom
-        // but is trans get another hash in line 123
-        // isnt it going to be impossible for me to find it because of the second hash?
+        memPool.push(this.pendingTransactions.shift())
       }
 
-      const leaves = transToBlock.map(x => SHA256(x))
+      const leaves = memPool.map(x => SHA256(x))
       const tree = new MerkleTree(leaves, SHA256)
       const root = tree.getRoot().toString('hex')
-      const filter = new PartitionedBloomFiltr(10, 5)
 
+      // const filter = new PartitionedBloomFilter(10, 5)
+      // filter.add(rewardTX)
+      // for (const x of memPool){
+      //     // console.log(x) ------------------------
+      //     // sumCoinsMinded+= x.amount --------------------------------
+      //     filter.add(x)
+      // }
 
-      let block=new Block(Date.now(),this.pendingTransactions,this.getLatestBlock().hash, root, tree, filter)
+      
+
+// const trans of block.transactions
+
+      let block=new Block(Date.now(),memPool,this.getLatestBlock().hash, root, tree)
+      // let block=new Block(Date.now(),this.pendingTransactions,this.getLatestBlock().hash, root, tree, filter)
       block.mineBlock(this.difficulty)
       console.log('Block successfully mines!')
       this.chain.push(block)
