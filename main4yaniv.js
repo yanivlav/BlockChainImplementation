@@ -23,20 +23,13 @@ const tx2=new Transaction(yanivWalletAddress,barWalletAddress,5)
 tx2.signTransaction(yanivKey)
 micaCoin.addTransaction(tx2)
 
-
 micaCoin.minePendingTransactions(minerWalletAddress)
 
-
- 
-console.log('\ Balance of miner ', micaCoin.getBalanceOfAddress(minerWalletAddress))
-console.log('\ Balance of bar ', micaCoin.getBalanceOfAddress(barWalletAddress))
-console.log('\ Balance of yaniv ', micaCoin.getBalanceOfAddress(yanivWalletAddress))
+// console.log('\ Balance of miner ', micaCoin.getBalanceOfAddress(minerWalletAddress))
+// console.log('\ Balance of bar ', micaCoin.getBalanceOfAddress(barWalletAddress))
+// console.log('\ Balance of yaniv ', micaCoin.getBalanceOfAddress(yanivWalletAddress))
 
 console.log(JSON.stringify(micaCoin, null, 4))
-
-
-
-
 
 
 // for every place writtenm bar there was mywallet
