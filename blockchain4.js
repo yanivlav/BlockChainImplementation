@@ -4,9 +4,9 @@ const ec = new EC('secp256k1')
 const {MerkleTree} = require('merkletreejs')
 const {PartitionedBloomFilter} = require('bloom-filters')
 
-const SumcoinsMinded = 0;
-const SumTotalCoins = 0;
-const SumCoinsBurned = 0;
+const sumCoinsMinded = 0;
+const sumTotalCoins = 0;
+const sumCoinsBurned = 0;
 
 
 
@@ -101,6 +101,7 @@ class Blockchain{
         let trans = this.pendingTransactions.shift()
         transToBlock.push(trans)
         filter.add(trans)
+        sumCoinsMinded += trans.amount;
         // Question - now every trans is in the bloom
         // but is trans get another hash in line 123
         // isnt it going to be impossible for me to find it because of the second hash?
@@ -139,7 +140,7 @@ class Blockchain{
     }
 
     getSumOfCoinMinded(){
-
+        return sumCoinsMinded;
     }
 
     getSumOfCoinBurned(){
@@ -174,7 +175,7 @@ class Blockchain{
       return true
     }
 
-    transactionLookupInTheBlockchainBloomFilter(transaction){
+    transactionLookupInTheBlockchainBloomFilter(transaction){// spv check
         let possibleBlocks = []
         for (let i = 1; i < this.chain.length; i++) {
          const currentBlock=this.chain[i]
@@ -187,8 +188,16 @@ class Blockchain{
         const currentBlock=this.possibleBlocks[i]
         const leaf = SHA256(transaction)
         const proof = currentBlock.tree.getProof(leaf)
-        if(currentBlock.tree.verify(proof, leaf, currentBlock.root))
-           return block
+        console.log("\nRuning SPV")
+        if(currentBlock.tree.verify(proof, leaf, currentBlock.root)){
+            console.log("\nTransaction is verified")
+            return block
+        }
+        else{
+            console.log("\nTransaction is Not verified")
+
+         }
+           
         //const leaf = SHA256('a')
         // const proof = tree.getProof(leaf)
         // console.log(tree.verify(proof, leaf, root)) // true
