@@ -65,7 +65,7 @@ console.log("This is burend coins -------------------" + micaCoin.sumCoinsBurned
 
 // micaCoin.minePendingTransactions(minerWalletAddress)
 
-// console.log(JSON.stringify(micaCoin, null, 4))
+//console.log(JSON.stringify(micaCoin, null, 4))
 
 console.log('\ Balance of miner ', micaCoin.getBalanceOfAddress(minerWalletAddress))
 console.log('\ Balance of bar ', micaCoin.getBalanceOfAddress(barWalletAddress))

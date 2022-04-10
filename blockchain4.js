@@ -148,7 +148,7 @@
 
       }
       console.log("transaction amount is:" + transaction.amount)
-      this.sumCoinsBurned += 2
+      this.sumCoinsBurned += transaction.fee
       transaction.amount -= transaction.fee
       this.pendingTransactions.push(transaction)
     } 
