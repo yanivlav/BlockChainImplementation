@@ -235,7 +235,6 @@ class Blockchain {
     // }
     // sleep(1000);
   }
-
 }
 
 module.exports.Blockchain = Blockchain

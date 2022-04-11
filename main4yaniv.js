@@ -44,48 +44,10 @@ for (let i = 0; i < 30; i++) {
     micaCoin.addTransaction(tx4)
     // micaCoin.minePendingTransactions(minerWalletAddress)
 }
+
 for (let i = 0; i<5; i++)
     micaCoin.minePendingTransactions(minerWalletAddress)
 
-
-
-
-// for (let i = 0; i < 3; i++)
-//     micaCoin.minePendingTransactions(minerWalletAddress)
-
-// const tx3=new Transaction(barWalletAddress,yanivWalletAddress,50)
-// tx3.signTransaction(barKey)
-// micaCoin.addTransaction(tx3)
-// // micaCoin.minePendingTransactions(minerWalletAddress)
-
-// const tx4=new Transaction(yanivWalletAddress,barWalletAddress,25)
-// tx4.signTransaction(yanivKey)
-// micaCoin.addTransaction(tx4)
-// micaCoin.minePendingTransactions(minerWalletAddress)
-
-// let myRandTransaction = 0 
-// initiateTransactionArray = []
-
-// for (let i=0; i<28; i++)
-// {
-//     if(i%2){
-//         myRandTransaction = 1 + getRandomInt(micaCoin.getBalanceOfAddress(barWalletAddress))
-//         initiateTransactionArray[i] = new Transaction(barWalletAddress,yanivWalletAddress,myRandTransaction)
-//         initiateTransactionArray[i].signTransaction(barKey)
-//         micaCoin.addTransaction(initiateTransactionArray[i])
-//     }
-//     else
-//     {
-//         myRandTransaction = 1 + getRandomInt(micaCoin.getBalanceOfAddress(yanivWalletAddress))
-//         initiateTransactionArray[i]=new Transaction(yanivWalletAddress,barWalletAddress,myRandTransaction)
-//         initiateTransactionArray[i].signTransaction(yanivKey)
-//         micaCoin.addTransaction(initiateTransactionArray[i])
-//     }
-// }
-
-// micaCoin.minePendingTransactions(minerWalletAddress)
-
-// console.log(JSON.stringify(micaCoin, null, 4))
 console.log("Amount of burned coins: " + micaCoin.sumCoinsBurned)
 console.log("Coin total supply: " + micaCoin.totalSupply)
 console.log('Balance of miner: ', micaCoin.getBalanceOfAddress(minerWalletAddress))
@@ -93,17 +55,3 @@ console.log('Balance of bar: ', micaCoin.getBalanceOfAddress(barWalletAddress))
 console.log('Balance of yaniv: ', micaCoin.getBalanceOfAddress(yanivWalletAddress))
 
 
-
-
-// for every place writtenm bar there was mywallet
-// let micaCoin=new Blockchain()
-
-// const tx1=new Transaction(barWalletAddress,'address1',10)
-// tx1.signTransaction(barKey)
-// micaCoin.addTransaction(tx1)
-
-// micaCoin.minePendingTransactions(barWalletAddress)
-
-// console.log('\ Balance of Bob ', micaCoin.getBalanceOfAddress(barWalletAddress))
-
-// console.log(JSON.stringify(micaCoin, null, 4))
