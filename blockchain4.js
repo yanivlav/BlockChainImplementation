@@ -8,10 +8,10 @@ const { PartitionedBloomFilter } = require('bloom-filters')
 
 class Transaction {
   constructor(fromAddress, toAddress, amount, compensation = 0) {
-    // this.fee = 2
+    this.fee = 2
     this.fromAddress = fromAddress
     this.toAddress = toAddress
-    this.amount = amount + compensation + 1 //miner compensation reward think!!!!!!!
+    this.amount = amount + compensation + this.fee // +1 miner compensation reward think!!!!!!!
     this.timestamp = Date.now()
     this.compensation = compensation
   }
@@ -52,7 +52,7 @@ class Block {
     this.hash = this.calculateHash()
     this.nonce = 0
     this.root = root
-    this.tree = tree
+    // this.tree = tree
 
     //this.filter=filter
   }
@@ -65,7 +65,7 @@ class Block {
       this.hash = this.calculateHash()
     }
 
-    console.log('Block minded  ' + this.nonce)
+    console.log('Nonce: ' + this.nonce)
   }
   hasValidTransaction() {
     for (const tx of this.transactions) {
@@ -84,11 +84,15 @@ class Blockchain {
     this.chain = [this.createGenesisBlock()]
     this.difficulty = 4
     this.pendingTransactions = []
-    this.sumCoinsBurned = 0
     this.memPool = []
     this.miningReward = 20
-    this.sumCoinMinded = 0
-    this.totalSupply = 21000000
+    this.totalMined = 0
+    this.coinCapacity = 21000000
+    this.totalSupply = this.coinCapacity
+    this.BlocksPerSecond = 5 //block per min in millisec
+    this.burnAddress = '041e386aa276de1162b6a4e5ed352a88c76f3b66f2835a1afc7f7e15608e18b4bcede9949220d1279c5eb0c804a141c252c7573b1f0f044bde3b6bc5df4b7b8cc1'
+    this.totalBurned = 0
+
   }
 
   createGenesisBlock() {
@@ -102,13 +106,18 @@ class Blockchain {
   minePendingTransactions(miningRewardAddress) {
     let j = 0
     let rewardFromCompensation = 0
+    let burnAmount = 0
     this.pendingTransactions.sort((a, b) => a.compensation - b.compensation)
 
     while (this.pendingTransactions.length > 0 && j < 3) {
       if (this.pendingTransactions[this.pendingTransactions.length - 1].compensation > 0) {
+        
         let mytrans = this.pendingTransactions.pop()
+        if (mytrans.compensation > 1){
+          rewardFromCompensation+=1
+          this.burn(mytrans.compensation - 1)
+        }
         this.memPool.push(mytrans)
-        rewardFromCompensation++
       }
       else
         this.memPool.push(this.pendingTransactions.shift())
@@ -133,14 +142,24 @@ class Blockchain {
     //     // sumCoinsMinded+= x.amount --------------------------------
     //     filter.add(x)
     // }    
-    this.updateSumOfMindedCoins()
-    let block = new Block(Date.now(), this.memPool, this.getLatestBlock().hash)//, tree, root)//, filter)
+    this.updateSumOfMinedCoins()
+    this.burn(1 * (this.chain.length - 1))
+    let block = new Block(Date.now(), this.memPool, this.getLatestBlock().hash, root)//, tree, root)//, filter)
     block.mineBlock(this.difficulty)
-    console.log('Block successfully mines!')
     this.chain.push(block)
     this.memPool = []
-    rewardFromCompensation = 0 // i think we can delete this line but not sure
-    this.printBlockDitailes(block)
+    // rewardFromCompensation = 0 // i think we can delete this line but not sure
+
+    function sleep(milliseconds) {
+      const date = Date.now();
+      let currentDate = null;
+      do {
+        currentDate = Date.now();
+      } while (currentDate - date < milliseconds);
+    }
+    sleep(this.BlocksPerSecond * 1000);
+
+    this.printBlockDetails(block)
 
   }
 
@@ -176,8 +195,7 @@ class Blockchain {
     console.log('To:' + transaction.toAddress)
     console.log('Amount:' + transaction.amount)
     console.log('Signature:' + transaction.signature)
-    console.log('===============================================================================================================================================================================================================')
-    this.pendingTransactions.push(transaction)
+    console.log('=====================================================================================================================================================================================================')
 
     this.pendingTransactions.push(transaction)
   }
@@ -199,13 +217,22 @@ class Blockchain {
     return true
   }
 
-  updateSumOfMindedCoins() {
+  updateSumOfMinedCoins() {
     if (this.totalSupply > 20) {
       this.totalSupply -= 20
-      this.sumCoinMinded += 20
+      this.totalMined += 20
     }
     else 
       throw new Error('Total coins supply reached!')
+  }
+
+  burn(amount) {
+    if (this.totalSupply >= amount) {
+      this.pendingTransactions.push(new Transaction(null, this.burnAddress, amount, 0))
+      this.totalBurned += amount
+      this.totalSupply -= amount
+    } else
+      throw new Error('Cannot burn more coins')
   }
 
   getSumOfMindedCoins() {
@@ -217,23 +244,15 @@ class Blockchain {
     return a.compensation - b.compensation
   }
 
-  printBlockDitailes(block){
+  printBlockDetails(block){
     console.log('Block: ' + this.chain.length + ' was successfully mined!')
-    console.log('Your wallet was rewarded with ' + this.miningReward + ' coins')
-    // console.log('Coins burned in this block: ' + burnAmount)
-    console.log('Total coins burned: ' + this.sumCoinsBurned)
-    console.log('Coin total supply: ' + this.totalSupply)
+    console.log('Total coins capacity: ' + this.coinCapacity)
+    console.log('Total coins burned: ' + this.totalBurned)
+    console.log('Total coins supply: ' + this.totalSupply)
     console.log(JSON.stringify(block, null, 4))
-    console.log('===============================================================================================================================================================================================================')
+    console.log('=====================================================================================================================================================================================================')
 
-    // function sleep(milliseconds) {
-    //   const date = Date.now();
-    //   let currentDate = null;
-    //   do {
-    //     currentDate = Date.now();
-    //   } while (currentDate - date < milliseconds);
-    // }
-    // sleep(1000);
+
   }
 
 }
