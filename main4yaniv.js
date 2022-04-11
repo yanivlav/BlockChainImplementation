@@ -98,17 +98,3 @@ console.log('Balance of bar: ', micaCoin.getBalanceOfAddress(barWalletAddress))
 console.log('Balance of yaniv: ', micaCoin.getBalanceOfAddress(yanivWalletAddress))
 
 
-
-
-// for every place writtenm bar there was mywallet
-// let micaCoin=new Blockchain()
-
-// const tx1=new Transaction(barWalletAddress,'address1',10)
-// tx1.signTransaction(barKey)
-// micaCoin.addTransaction(tx1)
-
-// micaCoin.minePendingTransactions(barWalletAddress)
-
-// console.log('\ Balance of Bob ', micaCoin.getBalanceOfAddress(barWalletAddress))
-
-// console.log(JSON.stringify(micaCoin, null, 4))
