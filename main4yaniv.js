@@ -35,11 +35,21 @@ micaCoin.addTransaction(tx2)
 micaCoin.minePendingTransactions(minerWalletAddress)
 
 
-for (let i = 0; i < 30; i++) {
-    let tx3 = new Transaction(yanivWalletAddress, barWalletAddress, 5, 2)
+for (let i = 0; i < 5; i++) {
+    let tx3 = new Transaction(yanivWalletAddress, barWalletAddress, 100, 2)
     tx3.signTransaction(yanivKey)
     micaCoin.addTransaction(tx3)
-    let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 10, 1)
+    let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 50, 1)
+    tx4.signTransaction(barKey)
+    micaCoin.addTransaction(tx4)
+   // micaCoin.minePendingTransactions(minerWalletAddress)
+}
+
+for (let i = 0; i < 5; i++) {
+    let tx3 = new Transaction(yanivWalletAddress, barWalletAddress, 25, 2)
+    tx3.signTransaction(yanivKey)
+    micaCoin.addTransaction(tx3)
+    let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 5, 1)
     tx4.signTransaction(barKey)
     micaCoin.addTransaction(tx4)
     // micaCoin.minePendingTransactions(minerWalletAddress)

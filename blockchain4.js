@@ -240,7 +240,19 @@ class Blockchain {
     console.log('Block: ' + this.chain.length,' ,Difficulty: '+this.difficulty)
     console.log('Total coins: ' + this.coinCapacity + ', Total mined: ' + this.totalMined)
     console.log('Total supply: ' + this.totalSupply + ', Total burned: ' + this.totalBurned)
-    console.log(JSON.stringify(block, null, 4))
+
+    var x = block
+    function omitKeys(obj, keys) {
+      var dup = {};
+      for (var key in obj) {
+        if (keys.indexOf(key) == -1) {
+          dup[key] = obj[key];
+        }
+      }
+      return dup;
+    }
+
+    console.log(JSON.stringify(omitKeys(x, ['tree']) ,null, 4))
     console.log('=====================================================================================================================================================================================================')
   }
 
