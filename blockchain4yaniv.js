@@ -28,6 +28,7 @@ class Transaction {
     this.timestamp = Date.now()
   }
 
+
   /**
    * Creates a SHA256 hash of the transaction
    *
@@ -204,13 +205,20 @@ class Blockchain {
     //Reward for the miner
     //Takes all the pending transactions, add the new Reward  
     const rewardTX = new Transaction(null, miningRewardAddress, this.miningReward)
-    this.pendingTransactions.push(rewardTX) 
+    // this.pendingTransactions.push(rewardTX) 
    //miner reward
-    const pool = []
-    pool.push(this.pendingTransactions.pop())
-    pool.unshift(this.pendingTransactions.shift())
-    pool.unshift(this.pendingTransactions.shift())
-    pool.unshift(this.pendingTransactions.shift())
+    let memPool = []
+    memPool.push(rewardTX)
+    if (this.pendingTransactions.length > 0){
+      memPool.push(this.pendingTransactions.shift())
+    }
+    if (this.pendingTransactions.length > 0) {
+      memPool.push(this.pendingTransactions.shift())
+    }
+    if (this.pendingTransactions.length > 0) {
+      memPool.push(this.pendingTransactions.shift())
+    }
+      
     //mempool of 3 transactions as FIFO
     // for (let i = 0; i < 3; i++) {
     //   if(this.pendingTransactions){
@@ -219,15 +227,16 @@ class Blockchain {
   
 
     //merkle tree
-    const leaves = pool.map(x => SHA256(x))
+    const leaves = memPool.map(x => SHA256(x))
     const tree = new MerkleTree(leaves, SHA256)
     const root = tree.getRoot().toString('hex')
 
     //Creating a new block object and initiate mining process on the new block with the difficulty
-    let block = new Block(Date.now(), pool, this.getLatestBlock().hash, root)
+    let block = new Block(Date.now(), memPool, this.getLatestBlock().hash, root)
     block.mineBlock(this.difficulty)
     console.log('Block successfully mines!')
     this.chain.push(block)
+
     //this.pendingTransactions = []
   }
 

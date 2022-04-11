@@ -175,7 +175,11 @@ class Blockchain {
     }
     if (!transaction.isValid()) {
       throw new Error('Cannont add invalid transaction to the chain')
-    }
+      }
+      console.log("transaction amount is:" + transaction.amount)
+      this.sumCoinsBurned += transaction.fee
+      transaction.amount -= transaction.fee
+      this.pendingTransactions.push(transaction)
 
     let balance = this.getBalanceOfAddress(transaction.fromAddress)
     transaction.isFundsSufficient(balance)
