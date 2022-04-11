@@ -40,7 +40,7 @@ class Transaction {
 }
 
 class Block {
-  constructor(timestamp, transactions, previousHash = '', root) {//,filter){
+  constructor(timestamp, transactions, previousHash = '', root,tree) {//,filter){
     // constructor(timestamp,transactions,previousHash=''){
     this.previousHash = previousHash
     this.timestamp = timestamp
@@ -48,7 +48,7 @@ class Block {
     this.hash = this.calculateHash()
     this.nonce = 0
     this.merkelRoot = root
-    // this.tree = tree
+    this.tree = tree
 
     //this.filter=filter
   }
@@ -143,7 +143,7 @@ class Blockchain {
     //     filter.add(x)
     // }    
     this.updateSumOfMinedCoins()
-    let block = new Block(Date.now(), this.memPool, this.getLatestBlock().hash, root)//, tree, root)//, filter)
+    let block = new Block(Date.now(), this.memPool, this.getLatestBlock().hash, root, tree)//, tree, root)//, filter)
     block.mineBlock(this.difficulty)
     this.chain.push(block)
     this.memPool = []
@@ -237,7 +237,7 @@ class Blockchain {
   }
 
   printBlockDetails(block){
-    console.log('Block: ' + this.chain.length,' Difficulty: '+this.difficulty)
+    console.log('Block: ' + this.chain.length,' ,Difficulty: '+this.difficulty)
     console.log('Total coins: ' + this.coinCapacity + ', Total mined: ' + this.totalMined)
     console.log('Total supply: ' + this.totalSupply + ', Total burned: ' + this.totalBurned)
     console.log(JSON.stringify(block, null, 4))
