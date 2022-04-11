@@ -40,7 +40,7 @@ for (let i = 0; i < 30; i++) {
     let tx3 = new Transaction(yanivWalletAddress, barWalletAddress, 5, 3)
     tx3.signTransaction(yanivKey)
     micaCoin.addTransaction(tx3)
-    let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 3, 1)
+    let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 3, 2)
     tx4.signTransaction(barKey)
     micaCoin.addTransaction(tx4)
    // micaCoin.minePendingTransactions(minerWalletAddress)

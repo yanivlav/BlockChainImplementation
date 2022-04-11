@@ -111,13 +111,21 @@ class Blockchain {
         let mytrans = this.pendingTransactions.pop()
         if (mytrans.compensation > 1){
           burnAmount += mytrans.compensation - 1
+          
         }
-        rewardFromCompensation += 1
+        // if (burnAmount) 
+        
+        rewardFromCompensation += mytrans.compensation - burnAmount
+        burnAmount = 0
+        mytrans.amount -= mytrans.compensation
         // mytrans.amount -= mytrans.compensation
         this.memPool.push(mytrans)
       }
-      else
+      else{
         this.memPool.push(this.pendingTransactions.shift())
+      }
+        
+      
       j++;
     }
 
