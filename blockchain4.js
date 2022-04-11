@@ -7,13 +7,14 @@ const { PartitionedBloomFilter } = require('bloom-filters')
 
 
 class Transaction {
-  constructor(fromAddress, toAddress, amount, compensation = 0 ,fee = 2) {
-    this.fee = fee
+  constructor(fromAddress, toAddress, amount, compensation = 0 , comment = "") {
+    this.fee = 2
     this.fromAddress = fromAddress
     this.toAddress = toAddress
     this.amount = amount + compensation // +1 miner compensation reward think!!!!!!!
     this.timestamp = Date.now()
     this.compensation = compensation
+    this.comment = comment
   }
   calculateHash() { return SHA256(this.fromAddress + this.toAddress + this.amount + this.timestamp).toString() }
   signTransaction(signingKey) {
@@ -88,7 +89,7 @@ class Blockchain {
     this.totalMined = 0
     this.coinCapacity = 21000000
     this.totalSupply = this.coinCapacity
-    this.BlocksPerSecond = 5 //block per min in millisec
+    this.secondsBetweenBlocks = 2 
     this.burnAddress = '041e386aa276de1162b6a4e5ed352a88c76f3b66f2835a1afc7f7e15608e18b4bcede9949220d1279c5eb0c804a141c252c7573b1f0f044bde3b6bc5df4b7b8cc1'
     this.totalBurned = 0
 
@@ -108,7 +109,7 @@ class Blockchain {
     let burnAmount = 0
     this.pendingTransactions.sort((a, b) => a.compensation - b.compensation)
 
-    while (this.pendingTransactions.length > 0 && j < 3) {
+    while (this.pendingTransactions.length > 0 && j < 2) {
       if (this.pendingTransactions[this.pendingTransactions.length - 1].compensation > 0) {
         
         let mytrans = this.pendingTransactions.pop()
@@ -123,8 +124,12 @@ class Blockchain {
       j++;
     }
 
-    const rewardTX = new Transaction(null, miningRewardAddress, this.miningReward + rewardFromCompensation)
+    const rewardTX = new Transaction(null, miningRewardAddress, this.miningReward + rewardFromCompensation,0,"Mining Reward")
     this.memPool.push(rewardTX)
+
+    const burnTX = new Transaction(null, this.burnAddress, 1 * this.chain.length, 0, "Burned Coins")
+    this.burn(burnTX.amount)
+    this.memPool.push(burnTX)
 
     const leaves = this.memPool.map(x => SHA256(x))
     const tree = new MerkleTree(leaves, SHA256)
@@ -142,7 +147,6 @@ class Blockchain {
     //     filter.add(x)
     // }    
     this.updateSumOfMinedCoins()
-    this.burn(1 * (this.chain.length - 1))
     let block = new Block(Date.now(), this.memPool, this.getLatestBlock().hash, root)//, tree, root)//, filter)
     block.mineBlock(this.difficulty)
     this.chain.push(block)
@@ -156,7 +160,7 @@ class Blockchain {
         currentDate = Date.now();
       } while (currentDate - date < milliseconds);
     }
-    sleep(this.BlocksPerSecond * 1000);
+    sleep(this.secondsBetweenBlocks * 1000);
 
     this.printBlockDetails(block)
 
@@ -225,15 +229,6 @@ class Blockchain {
       throw new Error('Total coins supply reached!')
   }
 
-  burn(amount) {
-    if (this.totalSupply >= amount) {
-      this.pendingTransactions.push(new Transaction(null, this.burnAddress, amount, 0))
-      this.totalBurned += amount
-      this.totalSupply -= amount
-    } else
-      throw new Error('Cannot burn more coins')
-  }
-
   getSumOfMindedCoins() {
     return sumCoinMinded
   }
@@ -250,10 +245,15 @@ class Blockchain {
     console.log('Total coins supply: ' + this.totalSupply)
     console.log(JSON.stringify(block, null, 4))
     console.log('=====================================================================================================================================================================================================')
-
-
   }
 
+    burn(amount) {
+      if (this.totalSupply >= amount) {
+        this.totalSupply -= amount
+        this.totalBurned += amount
+      }  else 
+      throw new Error('Cannot burn more coins')
+    }
 }
 
 module.exports.Blockchain = Blockchain
