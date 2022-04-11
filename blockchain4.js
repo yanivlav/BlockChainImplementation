@@ -186,17 +186,18 @@ class Blockchain {
       throw new Error('Cannont add invalid transaction to the chain')
     }
 
-    let balance = this.getBalanceOfAddress(transaction.fromAddress)
-    if(balance <= 0){
+    let walletBalance = this.getBalanceOfAddress(transaction.fromAddress)
+    if (transaction.amount > walletBalance) {
       throw new Error('No sufficient funds to preform transaction')
     }
 
-    console.log('##############A new transaction was made##############')
+    console.log('===============================================================================================================================================================================')
+    console.log('###Transaction made###')
     console.log('From:' + transaction.fromAddress)
     console.log('To:' + transaction.toAddress)
     console.log('Amount:' + transaction.amount)
     console.log('Signature:' + transaction.signature)
-    console.log('=====================================================================================================================================================================================================')
+    console.log('===============================================================================================================================================================================')
 
     this.pendingTransactions.push(transaction)
   }
@@ -253,7 +254,7 @@ class Blockchain {
     }
 
     console.log(JSON.stringify(omitKeys(x, ['tree']) ,null, 4))
-    console.log('=====================================================================================================================================================================================================')
+    console.log('===============================================================================================================================================================================')
   }
 
     burn(amount) {
