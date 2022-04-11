@@ -7,11 +7,11 @@ const { PartitionedBloomFilter } = require('bloom-filters')
 
 
 class Transaction {
-  constructor(fromAddress, toAddress, amount, compensation = 0) {
-    this.fee = 2
+  constructor(fromAddress, toAddress, amount, compensation = 0 ,fee = 2) {
+    this.fee = fee
     this.fromAddress = fromAddress
     this.toAddress = toAddress
-    this.amount = amount + compensation + this.fee // +1 miner compensation reward think!!!!!!!
+    this.amount = amount + compensation // +1 miner compensation reward think!!!!!!!
     this.timestamp = Date.now()
     this.compensation = compensation
   }
@@ -43,15 +43,14 @@ class Transaction {
 }
 
 class Block {
-  constructor(timestamp, transactions, previousHash = '', tree, root) {//,filter){
+  constructor(timestamp, transactions, previousHash = '', root) {//,filter){
     // constructor(timestamp,transactions,previousHash=''){
-
     this.previousHash = previousHash
     this.timestamp = timestamp
     this.transactions = transactions
     this.hash = this.calculateHash()
     this.nonce = 0
-    this.root = root
+    this.merkelRoot = root
     // this.tree = tree
 
     //this.filter=filter
@@ -254,6 +253,7 @@ class Blockchain {
 
 
   }
+
 }
 
 module.exports.Blockchain = Blockchain
