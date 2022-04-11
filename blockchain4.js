@@ -141,7 +141,7 @@ class Blockchain {
     this.memPool = []
     rewardFromCompensation = 0 // i think we can delete this line but not sure
     this.printBlockDitailes(block)
-    
+
   }
 
   getBalanceOfAddress(address) {
