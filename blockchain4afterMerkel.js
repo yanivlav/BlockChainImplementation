@@ -104,7 +104,6 @@
           let trans = this.pendingTransactions.shift()
           if(trans.com >= 1){
             commissions += 1
-          
             burnAmount += trans.com - 1
           }         
           this.memPool.push(trans)
@@ -143,8 +142,6 @@
         console.log('Coin total supply: ' + this.totalSupply)
         console.log(JSON.stringify(block, null, 4))
         console.log('===============================================================================================================================================================================================================')
-        this.chain.push(block)
-        this.memPool=[]
 
         function sleep(milliseconds) {
           const date = Date.now();

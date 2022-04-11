@@ -2,7 +2,7 @@ const {
     Blockchain,
     Block,
     Transaction
-} = require('./blockchain4afterMerkel.js')
+} = require('./blockchain4.js')
 const EC = require('elliptic').ec
 const ec = new EC('secp256k1')
 
@@ -42,8 +42,10 @@ for (let i = 0; i < 30; i++) {
     let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 2, 0)
     tx4.signTransaction(barKey)
     micaCoin.addTransaction(tx4)
-    micaCoin.minePendingTransactions(minerWalletAddress)
+    // micaCoin.minePendingTransactions(minerWalletAddress)
 }
+for (let i = 0; i<5; i++)
+    micaCoin.minePendingTransactions(minerWalletAddress)
 
 
 

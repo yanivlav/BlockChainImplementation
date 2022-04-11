@@ -11,7 +11,7 @@ class Transaction {
     // this.fee = 2
     this.fromAddress = fromAddress
     this.toAddress = toAddress
-    this.amount = amount + compensation + 1 //miner compensation reward
+    this.amount = amount + compensation + 1 //miner compensation reward think!!!!!!!
     this.timestamp = Date.now()
     this.compensation = compensation
   }
@@ -82,12 +82,13 @@ class Block {
 class Blockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()]
-    this.difficulty = 3
+    this.difficulty = 4
     this.pendingTransactions = []
     this.sumCoinsBurned = 0
     this.memPool = []
     this.miningReward = 20
-    this.sumCoinMinded = 0;
+    this.sumCoinMinded = 0
+    this.totalSupply = 21000000
   }
 
   createGenesisBlock() {
@@ -99,7 +100,6 @@ class Blockchain {
   }
 
   minePendingTransactions(miningRewardAddress) {
-
     let j = 0
     let rewardFromCompensation = 0
     this.pendingTransactions.sort((a, b) => a.compensation - b.compensation)
@@ -116,13 +116,7 @@ class Blockchain {
     }
 
     const rewardTX = new Transaction(null, miningRewardAddress, this.miningReward + rewardFromCompensation)
-    if (this.miningReward + rewardFromCompensation === 20 )
-    {
-      console.log("jeck pot!!!!!!!!!!!!")
-    }
     this.memPool.push(rewardTX)
-
-    this.updateSumOfMindedCoins(this.memPool)
 
     const leaves = this.memPool.map(x => SHA256(x))
     const tree = new MerkleTree(leaves, SHA256)
@@ -139,13 +133,15 @@ class Blockchain {
     //     // sumCoinsMinded+= x.amount --------------------------------
     //     filter.add(x)
     // }    
-
-    let block = new Block(Date.now(), this.memPool, this.getLatestBlock().hash, tree, root)//, filter)
+    this.updateSumOfMindedCoins()
+    let block = new Block(Date.now(), this.memPool, this.getLatestBlock().hash)//, tree, root)//, filter)
     block.mineBlock(this.difficulty)
     console.log('Block successfully mines!')
     this.chain.push(block)
     this.memPool = []
     rewardFromCompensation = 0 // i think we can delete this line but not sure
+    this.printBlockDitailes(block)
+    
   }
 
   getBalanceOfAddress(address) {
@@ -163,11 +159,6 @@ class Blockchain {
     return balance
   }
 
-  // isBalanceSufficientForTransaction(transaction){
-  //   if(getBalanceOfAddress(transaction.fromAddress)<transaction.amount){
-  //     throw new Error('No sufficient funds to preform transaction')
-  //   }
-  // } 
 
   addTransaction(transaction) {
     if (!transaction.fromAddress || !transaction.toAddress) {
@@ -175,49 +166,75 @@ class Blockchain {
     }
     if (!transaction.isValid()) {
       throw new Error('Cannont add invalid transaction to the chain')
-      }
-      console.log("transaction amount is:" + transaction.amount)
-      this.sumCoinsBurned += transaction.fee
-      transaction.amount -= transaction.fee
-      this.pendingTransactions.push(transaction)
+    }
 
     let balance = this.getBalanceOfAddress(transaction.fromAddress)
     transaction.isFundsSufficient(balance)
+
+    console.log('##############A new transaction was made##############')
+    console.log('From:' + transaction.fromAddress)
+    console.log('To:' + transaction.toAddress)
+    console.log('Amount:' + transaction.amount)
+    console.log('Signature:' + transaction.signature)
+    console.log('===============================================================================================================================================================================================================')
+    this.pendingTransactions.push(transaction)
 
     this.pendingTransactions.push(transaction)
   }
 
 
-isChainValid() {
-  for (let i = 1; i < this.chain.length; i++) {
-    const currentBlock = this.chain[i]
-    const previousBlock = this.chain[i - 1]
-    if (!currentBlock.hasValidTransaction()) { return false }
-    if (currentBlock.hash !== currentBlock.calculateHash()) {
-      return false
+  isChainValid() {
+    for (let i = 1; i < this.chain.length; i++) {
+      const currentBlock = this.chain[i]
+      const previousBlock = this.chain[i - 1]
+      if (!currentBlock.hasValidTransaction()) { return false }
+      if (currentBlock.hash !== currentBlock.calculateHash()) {
+        return false
+      }
+
+      if (currentBlock.previousHash !== previousBlock.hash) {
+        return false
+      }
     }
+    return true
+  }
 
-    if (currentBlock.previousHash !== previousBlock.hash) {
-      return false
+  updateSumOfMindedCoins() {
+    if (this.totalSupply > 20) {
+      this.totalSupply -= 20
+      this.sumCoinMinded += 20
     }
+    else 
+      throw new Error('Total coins supply reached!')
   }
-  return true
-}
 
-updateSumOfMindedCoins(memPool) {
-  for (let x in memPool) {
-    this.sumCoinMinded += x.amount
+  getSumOfMindedCoins() {
+    return sumCoinMinded
   }
-}
-
-getSumOfMindedCoins() {
-  return sumCoinMinded
-}
 
 
-compareCompensation(a, b) {
-  return a.compensation - b.compensation
-}
+  compareCompensation(a, b) {
+    return a.compensation - b.compensation
+  }
+
+  printBlockDitailes(block){
+    console.log('Block: ' + this.chain.length + ' was successfully mined!')
+    console.log('Your wallet was rewarded with ' + this.miningReward + ' coins')
+    // console.log('Coins burned in this block: ' + burnAmount)
+    console.log('Total coins burned: ' + this.sumCoinsBurned)
+    console.log('Coin total supply: ' + this.totalSupply)
+    console.log(JSON.stringify(block, null, 4))
+    console.log('===============================================================================================================================================================================================================')
+
+    // function sleep(milliseconds) {
+    //   const date = Date.now();
+    //   let currentDate = null;
+    //   do {
+    //     currentDate = Date.now();
+    //   } while (currentDate - date < milliseconds);
+    // }
+    // sleep(1000);
+  }
 
 }
 
