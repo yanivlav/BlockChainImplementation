@@ -36,10 +36,10 @@ micaCoin.minePendingTransactions(minerWalletAddress)
 
 
 for (let i = 0; i < 30; i++) {
-    let tx3 = new Transaction(yanivWalletAddress, barWalletAddress, 1, 1)
+    let tx3 = new Transaction(yanivWalletAddress, barWalletAddress, 5, 2)
     tx3.signTransaction(yanivKey)
     micaCoin.addTransaction(tx3)
-    let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 2, 0)
+    let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 10, 1)
     tx4.signTransaction(barKey)
     micaCoin.addTransaction(tx4)
     // micaCoin.minePendingTransactions(minerWalletAddress)
@@ -90,9 +90,9 @@ while (micaCoin.pendingTransactions.length > 0){
 
 // console.log(JSON.stringify(micaCoin, null, 4))
 console.log("Coin Capacity: " + micaCoin.coinCapacity)
-console.log("Coin total Burned: " + micaCoin.totalBurned)
-console.log("Coin rest supply: " + micaCoin.totalSupply)
-console.log("Coin total mined: " + micaCoin.totalMined)
+console.log("Total Burned: " + micaCoin.totalBurned)
+console.log("Total Supply: " + micaCoin.totalSupply)
+console.log("Total mined: " + micaCoin.totalMined)
 console.log('Balance of miner: ', micaCoin.getBalanceOfAddress(minerWalletAddress))
 console.log('Balance of bar: ', micaCoin.getBalanceOfAddress(barWalletAddress))
 console.log('Balance of yaniv: ', micaCoin.getBalanceOfAddress(yanivWalletAddress))

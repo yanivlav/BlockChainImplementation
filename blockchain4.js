@@ -8,7 +8,7 @@ const { PartitionedBloomFilter } = require('bloom-filters')
 
 class Transaction {
   constructor(fromAddress, toAddress, amount, compensation = 0 , comment = "") {
-    this.fee = 2
+    //this.fee = 2
     this.fromAddress = fromAddress
     this.toAddress = toAddress
     this.amount = amount + compensation // +1 miner compensation reward think!!!!!!!
@@ -35,11 +35,7 @@ class Transaction {
     return publicKey.verify(this.calculateHash(), this.signature)
   }
 
-  isFundsSufficient(balance) {
-    if (balance < this.amount) {
-      throw new Error('No sufficient funds to preform transaction')
-    }
-  }
+  
 
 }
 
@@ -89,7 +85,7 @@ class Blockchain {
     this.totalMined = 0
     this.coinCapacity = 21000000
     this.totalSupply = this.coinCapacity
-    this.secondsBetweenBlocks = 2 
+    this.secondsBetweenBlocks = 0 
     this.burnAddress = '041e386aa276de1162b6a4e5ed352a88c76f3b66f2835a1afc7f7e15608e18b4bcede9949220d1279c5eb0c804a141c252c7573b1f0f044bde3b6bc5df4b7b8cc1'
     this.totalBurned = 0
 
@@ -114,9 +110,9 @@ class Blockchain {
         
         let mytrans = this.pendingTransactions.pop()
         if (mytrans.compensation > 1){
-          rewardFromCompensation+=1
-          this.burn(mytrans.compensation - 1)
+          burnAmount += mytrans.compensation - 1
         }
+        rewardFromCompensation += 1
         this.memPool.push(mytrans)
       }
       else
@@ -124,10 +120,10 @@ class Blockchain {
       j++;
     }
 
-    const rewardTX = new Transaction(null, miningRewardAddress, this.miningReward + rewardFromCompensation,0,"Mining Reward")
+    const rewardTX = new Transaction(null, miningRewardAddress, this.miningReward + rewardFromCompensation, 0, "Mining Reward: " + this.miningReward + " coins, Compensation: " + rewardFromCompensation)
     this.memPool.push(rewardTX)
 
-    const burnTX = new Transaction(null, this.burnAddress, 1 * this.chain.length, 0, "Burned Coins")
+    const burnTX = new Transaction(null, this.burnAddress, 1 * (this.chain.length) + burnAmount, 0, "Burned Coins by block: " + (this.chain.length) + ", Burned by too high gas fee (compensation > 1): " + burnAmount)
     this.burn(burnTX.amount)
     this.memPool.push(burnTX)
 
@@ -191,7 +187,9 @@ class Blockchain {
     }
 
     let balance = this.getBalanceOfAddress(transaction.fromAddress)
-    transaction.isFundsSufficient(balance)
+    if(balance <= 0){
+      throw new Error('No sufficient funds to preform transaction')
+    }
 
     console.log('##############A new transaction was made##############')
     console.log('From:' + transaction.fromAddress)
@@ -239,10 +237,9 @@ class Blockchain {
   }
 
   printBlockDetails(block){
-    console.log('Block: ' + this.chain.length + ' was successfully mined!')
-    console.log('Total coins capacity: ' + this.coinCapacity)
-    console.log('Total coins burned: ' + this.totalBurned)
-    console.log('Total coins supply: ' + this.totalSupply)
+    console.log('Block: ' + this.chain.length,' Difficulty: '+this.difficulty)
+    console.log('Total coins: ' + this.coinCapacity + ', Total mined: ' + this.totalMined)
+    console.log('Total supply: ' + this.totalSupply + ', Total burned: ' + this.totalBurned)
     console.log(JSON.stringify(block, null, 4))
     console.log('=====================================================================================================================================================================================================')
   }
