@@ -21,27 +21,36 @@ let micaCoin=new Blockchain()
 for(let i=0; i<10; i++)
 micaCoin.minePendingTransactions(minerWalletAddress)
 
-const tx1=new Transaction(minerWalletAddress,yanivWalletAddress,100)
+const tx1=new Transaction(minerWalletAddress,yanivWalletAddress,100,0)
 tx1.signTransaction(minerKey)
 micaCoin.addTransaction(tx1)
 micaCoin.minePendingTransactions(minerWalletAddress)
 
-const tx2=new Transaction(minerWalletAddress,barWalletAddress,100)
+const tx2=new Transaction(minerWalletAddress,barWalletAddress,100,0)
 tx2.signTransaction(minerKey)
 micaCoin.addTransaction(tx2)
 micaCoin.minePendingTransactions(minerWalletAddress)
 
-console.log("This is burend coins -------------------" + micaCoin.sumCoinsBurned)
 
-// const tx3=new Transaction(barWalletAddress,yanivWalletAddress,50)
-// tx3.signTransaction(barKey)
-// micaCoin.addTransaction(tx3)
-// // micaCoin.minePendingTransactions(minerWalletAddress)
-
-// const tx4=new Transaction(yanivWalletAddress,barWalletAddress,25)
-// tx4.signTransaction(yanivKey)
-// micaCoin.addTransaction(tx4)
+const tx3=new Transaction(barWalletAddress,yanivWalletAddress,50,2)
+tx3.signTransaction(barKey)
+micaCoin.addTransaction(tx3)
 // micaCoin.minePendingTransactions(minerWalletAddress)
+
+const tx4=new Transaction(yanivWalletAddress,barWalletAddress,25,10)
+tx4.signTransaction(yanivKey)
+micaCoin.addTransaction(tx4)
+// micaCoin.minePendingTransactions(minerWalletAddress)
+
+const tx5=new Transaction(barWalletAddress,yanivWalletAddress,12,0)
+tx5.signTransaction(barKey)
+micaCoin.addTransaction(tx5)
+// micaCoin.minePendingTransactions(minerWalletAddress)
+
+const tx6=new Transaction(yanivWalletAddress,barWalletAddress,32,0)
+tx6.signTransaction(yanivKey)
+micaCoin.addTransaction(tx6)
+micaCoin.minePendingTransactions(minerWalletAddress)
 
 // let myRandTransaction = 0 
 // initiateTransactionArray = []
