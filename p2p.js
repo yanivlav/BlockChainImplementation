@@ -70,7 +70,8 @@ function getPeerIps(peers) {
 
 //'hello' -> 'myPort:hello'
 function formatMessage(message) {
-    return `${me}>${message}`
+    return `${message}`
+    //return `${me}>${message}`
 }
 
 //'127.0.0.1:4000' -> '4000'
