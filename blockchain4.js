@@ -78,7 +78,7 @@ class Block {
 class Blockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()]
-    this.difficulty = 4
+    this.difficulty = 2
     this.pendingTransactions = []
     this.memPool = []
     this.miningReward = 20
@@ -113,6 +113,7 @@ class Blockchain {
           burnAmount += mytrans.compensation - 1
         }
         rewardFromCompensation += 1
+        // mytrans.amount -= mytrans.compensation
         this.memPool.push(mytrans)
       }
       else

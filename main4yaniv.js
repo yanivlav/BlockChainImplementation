@@ -28,6 +28,7 @@ for (let i = 0; i < 10; i++)
 //send to 2 wallet 100 each
 const tx1 = new Transaction(minerWalletAddress, yanivWalletAddress, 100, 0)
 tx1.signTransaction(minerKey)
+//send to p2p
 micaCoin.addTransaction(tx1)
 const tx2 = new Transaction(minerWalletAddress, barWalletAddress, 100, 0)
 tx2.signTransaction(minerKey)
