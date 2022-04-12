@@ -9,10 +9,14 @@
     
 }
 
+
 const tx1=new Transaction(50,2)
 const tx2=new Transaction(50,10)
 const tx3=new Transaction(50,0)
 const tx4=new Transaction(50,0)
+
+
+console.log("this is my type of ---------->" + typeof (tx1))
 
 let trans = [tx1,tx2,tx3,tx4]
 let check = []

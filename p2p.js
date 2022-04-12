@@ -57,6 +57,17 @@ topology(myIp, peerIps).on('connection', (socket, peerIp) => {
 
         }
 
+        sendMessage = (id, type, data) => {
+            peers[id].conn.write(JSON.stringify(
+                {
+                    to: id,
+                    from: myPeerId,
+                    type: type,
+                    data: data
+                }
+            ));
+        };
+
 
         const receiverPeer = extractReceiverPeer(message)
         if (sockets[receiverPeer]) { //message to specific peer
