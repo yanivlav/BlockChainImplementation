@@ -39,32 +39,18 @@ for (let i = 0; i < 15; i++) {
     tx4.signTransaction(barKey)
     micaCoin.addTransaction(tx4)
     micaCoin.minePendingTransactions(minerWalletAddress)
-    console.log('Balance of miner: ', micaCoin.getBalanceOfAddress(minerWalletAddress))
-    console.log('Balance of bar: ', micaCoin.getBalanceOfAddress(barWalletAddress))
-    console.log('Balance of yaniv: ', micaCoin.getBalanceOfAddress(yanivWalletAddress))
 }
 
 while (micaCoin.pendingTransactions.length > 0){ // needs a change to exit or some thing
     micaCoin.minePendingTransactions(minerWalletAddress)
 }
 
-let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 2, 1)
+
+let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 400, 1)
 tx4.signTransaction(barKey)
 micaCoin.addTransaction(tx4)
+micaCoin.minePendingTransactions(minerWalletAddress) // no funds for transacrtion
 
-micaCoin.minePendingTransactions(minerWalletAddress)
-
-
-
-// let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 400, 1)
-// tx4.signTransaction(barKey)
-// micaCoin.addTransaction(tx4)
-// micaCoin.minePendingTransactions(minerWalletAddress) // no funds for transacrtion
-
-// while (1) { // needs a change to exit or some thing
-//     micaCoin.minePendingTransactions(minerWalletAddress)
-// }
-    
 console.log("Coin Capacity: " + micaCoin.coinCapacity)
 console.log("Total Burned: " + micaCoin.totalBurned)
 console.log("Total Supply: " + micaCoin.totalSupply)
@@ -77,5 +63,5 @@ console.log('Balance of yaniv: ', micaCoin.getBalanceOfAddress(yanivWalletAddres
 // micaCoin.transactionLookupInTheBlockchainBloomFilter(tx1)
 // micaCoin.transactionLookupInTheBlockchainBloomFilter('tx6')
 
-micaCoin.transactionLookupInTheBlockchainBloomFilter('tx4')
+micaCoin.transactionLookupInTheBlockchainBloomFilter('tx4')//problem bug unresolved
 console.log("tx4 = " + tx4)
