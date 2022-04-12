@@ -5,13 +5,11 @@ const { MerkleTree } = require('merkletreejs')
 const { PartitionedBloomFilter } = require('bloom-filters')
 
 
-
 class Transaction {
-  constructor(fromAddress, toAddress, amount, compensation = 0 , comment = "") {
-    //this.fee = 2
+  constructor(fromAddress, toAddress, amount, compensation = 0, comment = "") {
     this.fromAddress = fromAddress
     this.toAddress = toAddress
-    this.amount = amount + compensation // +1 miner compensation reward think!!!!!!!
+    this.amount = amount + compensation // amount out amout in
     this.timestamp = Date.now()
     this.compensation = compensation
     this.comment = comment
@@ -25,7 +23,6 @@ class Transaction {
     const sig = signingKey.sign(hashTx, 'base64')
     this.signature = sig.toDER('hex')
   }
-
   isValid() {
     if (this.fromAddress === null) return true
     if (!this.signature || this.signature.length === 0) {
@@ -34,26 +31,24 @@ class Transaction {
     const publicKey = ec.keyFromPublic(this.fromAddress, 'hex')
     return publicKey.verify(this.calculateHash(), this.signature)
   }
-
-  
-
 }
 
+
+
 class Block {
-  constructor(timestamp, transactions, previousHash = '', root,tree) {//,filter){
+  constructor(timestamp, transactions, previousHash = '', tree, root, filter) {
     // constructor(timestamp,transactions,previousHash=''){
     this.previousHash = previousHash
     this.timestamp = timestamp
     this.transactions = transactions
     this.hash = this.calculateHash()
     this.nonce = 0
-    this.merkelRoot = root
+    this.root = root
     this.tree = tree
-
-    //this.filter=filter
+    this.filter = filter
   }
-  calculateHash() {//add root and tree
-    return SHA256(this.previousHash + this.timestamp + JSON.stringify(this.transactions) + this.nonce).toString()
+  calculateHash() {
+    return SHA256(this.previousHash + this.timestamp + JSON.stringify(this.transactions) + this.nonce + this.tree + this.root + this.filter).toString()
   }
   mineBlock(difficulty) {
     while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join('0')) {
@@ -72,44 +67,41 @@ class Block {
     }
     return true
   }
-
-
 }
+
+
+
 class Blockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()]
-    this.difficulty = 4
+    this.difficulty = 1
     this.pendingTransactions = []
     this.memPool = []
     this.miningReward = 20
     this.totalMined = 0
     this.coinCapacity = 21000000
     this.totalSupply = this.coinCapacity
-    this.secondsBetweenBlocks = 0 
+    this.secondsBetweenBlocks = 0
     this.burnAddress = '041e386aa276de1162b6a4e5ed352a88c76f3b66f2835a1afc7f7e15608e18b4bcede9949220d1279c5eb0c804a141c252c7573b1f0f044bde3b6bc5df4b7b8cc1'
     this.totalBurned = 0
-
   }
-
   createGenesisBlock() {
     return new Block("01/01/2019", "Genesis Block", "0")
   }
-
   getLatestBlock() {
     return this.chain[this.chain.length - 1]
   }
-
   minePendingTransactions(miningRewardAddress) {
     let j = 0
     let rewardFromCompensation = 0
     let burnAmount = 0
     this.pendingTransactions.sort((a, b) => a.compensation - b.compensation)
 
-    while (this.pendingTransactions.length > 0 && j < 2) {
+    while (this.pendingTransactions.length > 0 && j < 2) { //why 2 and not 4 burn is a transaction?
       if (this.pendingTransactions[this.pendingTransactions.length - 1].compensation > 0) {
-        
+
         let mytrans = this.pendingTransactions.pop()
-        if (mytrans.compensation > 1){
+        if (mytrans.compensation > 1) {
           burnAmount += mytrans.compensation - 1
         }
         rewardFromCompensation += 1
@@ -122,32 +114,25 @@ class Blockchain {
 
     const rewardTX = new Transaction(null, miningRewardAddress, this.miningReward + rewardFromCompensation, 0, "Mining Reward: " + this.miningReward + " coins, Compensation: " + rewardFromCompensation)
     this.memPool.push(rewardTX)
-
     const burnTX = new Transaction(null, this.burnAddress, 1 * (this.chain.length) + burnAmount, 0, "Burned Coins by block: " + (this.chain.length) + ", Burned by too high gas fee (compensation > 1): " + burnAmount)
-    this.burn(burnTX.amount)
+    this.burn(burnTX.amount) // needs to fix
     this.memPool.push(burnTX)
 
     const leaves = this.memPool.map(x => SHA256(x))
     const tree = new MerkleTree(leaves, SHA256)
     const root = tree.getRoot().toString('hex')
+    const filter = new PartitionedBloomFilter(10, 5)
+    filter.add(rewardTX.calculateHash())
+    for (const x of this.memPool) {
+      filter.add(x.calculateHash())
+    }
 
-    // const filter = new PartitionedBloomFilter(10, 5)
-    // filter.add(rewardTX.signature)
-
-    // const hashTx=this.calculateHash()
-    // const sig=signingKey.sign(hashTx,'base64')
-    // this.signature=sig.toDER('hex')
-    // for (const x of memPool){
-    //     // console.log(x) ------------------------
-    //     // sumCoinsMinded+= x.amount --------------------------------
-    //     filter.add(x)
-    // }    
     this.updateSumOfMinedCoins()
-    let block = new Block(Date.now(), this.memPool, this.getLatestBlock().hash, root, tree)//, tree, root)//, filter)
+    let block = new Block(Date.now(), this.memPool, this.getLatestBlock().hash, tree, root, filter)
     block.mineBlock(this.difficulty)
     this.chain.push(block)
     this.memPool = []
-    // rewardFromCompensation = 0 // i think we can delete this line but not sure
+
 
     function sleep(milliseconds) {
       const date = Date.now();
@@ -161,7 +146,6 @@ class Blockchain {
     this.printBlockDetails(block)
 
   }
-
   getBalanceOfAddress(address) {
     let balance = 0
     for (const block of this.chain) {
@@ -176,8 +160,6 @@ class Blockchain {
     }
     return balance
   }
-
-
   addTransaction(transaction) {
     if (!transaction.fromAddress || !transaction.toAddress) {
       throw new Error('Transaction must have from and to addresses')
@@ -187,21 +169,13 @@ class Blockchain {
     }
 
     let balance = this.getBalanceOfAddress(transaction.fromAddress)
-    if(balance <= 0){
+    if (balance <= 0) {
       throw new Error('No sufficient funds to preform transaction')
     }
 
-    console.log('##############A new transaction was made##############')
-    console.log('From:' + transaction.fromAddress)
-    console.log('To:' + transaction.toAddress)
-    console.log('Amount:' + transaction.amount)
-    console.log('Signature:' + transaction.signature)
-    console.log('=====================================================================================================================================================================================================')
-
+    this.transactionDetails(transaction)
     this.pendingTransactions.push(transaction)
   }
-
-
   isChainValid() {
     for (let i = 1; i < this.chain.length; i++) {
       const currentBlock = this.chain[i]
@@ -210,48 +184,75 @@ class Blockchain {
       if (currentBlock.hash !== currentBlock.calculateHash()) {
         return false
       }
-
       if (currentBlock.previousHash !== previousBlock.hash) {
         return false
       }
     }
     return true
   }
-
+  transactionLookupInTheBlockchainBloomFilter(transaction) {// spv check
+    let possibleBlocks = []
+    for (let i = 1; i < this.chain.length; i++) {
+      const currentBlock = this.chain[i]
+      if (currentBlock.filter.has(transaction) === true) {
+        possibleBlocks.push(currentBlock)
+      }
+    }
+    console.log("\nRunning SPV")
+    for (let i = 0; i < possibleBlocks.length; i++) {
+      if (this.myVerify(transaction, possibleBlocks[i])) {
+        console.log("Transaction is verified in the blockchain\n")
+        console.log(possibleBlocks[i])
+        // return possibleBlocks[i]
+      }
+    }
+    console.log("Transaction does not exist!\n")
+  }
   updateSumOfMinedCoins() {
     if (this.totalSupply > 20) {
       this.totalSupply -= 20
       this.totalMined += 20
     }
-    else 
+    else
       throw new Error('Total coins supply reached!')
   }
-
   getSumOfMindedCoins() {
     return sumCoinMinded
   }
-
-
   compareCompensation(a, b) {
     return a.compensation - b.compensation
   }
-
-  printBlockDetails(block){
-    console.log('Block: ' + this.chain.length,' ,Difficulty: '+this.difficulty)
+  printBlockDetails(block) {
+    console.log('Block: ' + this.chain.length, ' ,Difficulty: ' + this.difficulty)
     console.log('Total coins: ' + this.coinCapacity + ', Total mined: ' + this.totalMined)
     console.log('Total supply: ' + this.totalSupply + ', Total burned: ' + this.totalBurned)
-    console.log(JSON.stringify(block, null, 4))
+    // console.log(JSON.stringify(block, null, 4))
     console.log('=====================================================================================================================================================================================================')
   }
-
-    burn(amount) {
-      if (this.totalSupply >= amount) {
-        this.totalSupply -= amount
-        this.totalBurned += amount
-      }  else 
+  burn(amount) {
+    if (this.totalSupply >= amount) {
+      this.totalSupply -= amount
+      this.totalBurned += amount
+    } else
       throw new Error('Cannot burn more coins')
-    }
+  }
+  myVerify(transaction, possibleBlocks) {
+    const leaf = SHA256(transaction)
+    const root = possibleBlocks.tree.getRoot().toString('hex')
+    const proof = possibleBlocks.tree.getProof(leaf)
+    return possibleBlocks.tree.verify(proof, leaf, root)
+  }
+  transactionDetails(transaction) {
+    console.log('##############A new transaction was made##############')
+    console.log('From:' + transaction.fromAddress)
+    console.log('To:' + transaction.toAddress)
+    console.log('Amount:' + transaction.amount)
+    console.log('Signature:' + transaction.signature)
+    console.log('=====================================================================================================================================================================================================')
+  }
+  
 }
+
 
 module.exports.Blockchain = Blockchain
 module.exports.Block = Block

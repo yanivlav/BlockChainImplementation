@@ -1,4 +1,8 @@
 const topology = require('fully-connected-topology')
+const prompt = require("prompt-sync")();
+const lib = require("./main4yaniv.js");
+
+
 const {
     stdin,
     exit,
@@ -12,6 +16,7 @@ const {
     peers
 } = extractPeersAndMyPort()
 const sockets = {}
+let fullNode = 0
 
 log('---------------------')
 log('Welcome to p2p chat!')
@@ -25,21 +30,40 @@ const peerIps = getPeerIps(peers)
 //connect to peers
 topology(myIp, peerIps).on('connection', (socket, peerIp) => {
     const peerPort = extractPortFromIp(peerIp)
-    log('connected to peer - ', peerPort)
+    log('connected to peer - ', peerPort) //the other terminal
 
     sockets[peerPort] = socket
     stdin.on('data', data => { //on user input
-        const message = data.toString().trim()
+        let message = data.toString().trim()
         if (message === 'exit') { //on exit
             log('Bye bye')
             exit(0)
         }
+
+        if (message === 'RF') { //Run Full node
+            // fullNode = me
+            const { Blockchain, Block, Transaction } = require('./blockchain4.js')
+            const main = require('./main4yaniv.js')
+        }
+
+        if (message === 'B') {
+            // log("Your balance is: " + balance)// log print on asked terminal
+            // socket.write(formatMessage("Made a Balance request\n"))
+            message = "Made a Balance request\n"
+        }
+        if (message === 'Made a Balance request\n'){ // call micagetbalance
+            socket.write(extractPeersAndMyPort())
+            balanceRequestFromFullNode()
+
+        }
+
 
         const receiverPeer = extractReceiverPeer(message)
         if (sockets[receiverPeer]) { //message to specific peer
             if (peerPort === receiverPeer) { //write only once
                 sockets[receiverPeer].write(formatMessage(extractMessageToSpecificPeer(message)))
             }
+        
         } else { //broadcast message to everyone
             socket.write(formatMessage(message))
         }
@@ -70,8 +94,7 @@ function getPeerIps(peers) {
 
 //'hello' -> 'myPort:hello'
 function formatMessage(message) {
-    return `${message}`
-    //return `${me}>${message}`
+    return `${me}>${message}`
 }
 
 //'127.0.0.1:4000' -> '4000'
@@ -87,4 +110,9 @@ function extractReceiverPeer(message) {
 //'4000>hello' -> 'hello'
 function extractMessageToSpecificPeer(message) {
     return message.slice(5, message.length);
+}
+
+function balanceRequestFromFullNode() {
+    lib.getBalanceOfAddress('04ed93dd03e044ccaad8dcae36a2a5046b7d5c3863a445b9f187e6b83324742d04d5a84bc948e648d414c4255a88abfe96c4b98d5cf380606c912d0a24164bfa14')
+    // console.log("Preforming balance requst for port: " + )
 }

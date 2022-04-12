@@ -13,6 +13,7 @@
     "crypto-js": "^4.1.1",
     "elliptic": "^6.5.4",
     "fully-connected-topology": "^1.1.1",
-    "merkletreejs": "^0.2.31"
+    "merkletreejs": "^0.2.31",
+    "prompt-sync": "^4.2.0"
   }
 }

@@ -1,15 +1,10 @@
-const {
-    Blockchain,
-    Block,
-    Transaction
-} = require('./blockchain4.js')
+const {Blockchain, Block,Transaction} = require('./blockchain4.js')
 const EC = require('elliptic').ec
 const ec = new EC('secp256k1')
 
-function getRandomInt(max) {
-    return Math.floor(Math.random() * max);
-}
-
+// function getRandomInt(max) {
+//     return Math.floor(Math.random() * max);
+// }
 
 const barKey = ec.keyFromPrivate('4a8c9b48ffb71cae5f8663074b4a7d32a1ed50b4f16b9e12520f96ce4f4b7d22')
 const barWalletAddress = barKey.getPublic('hex')
@@ -20,8 +15,8 @@ const yanivWalletAddress = yanivKey.getPublic('hex')
 const minerKey = ec.keyFromPrivate(' 35c6745760526113b88210ad543fbd9422dd4d9f2b646fda22ed6c4a87060e12')
 const minerWalletAddress = minerKey.getPublic('hex')
 
-//miner get 200 coins
 let micaCoin = new Blockchain()
+//miner get 200 coins
 for (let i = 0; i < 10; i++)
     micaCoin.minePendingTransactions(minerWalletAddress)
 
@@ -35,60 +30,23 @@ micaCoin.addTransaction(tx2)
 micaCoin.minePendingTransactions(minerWalletAddress)
 
 
-for (let i = 0; i < 30; i++) {
+for (let i = 0; i < 1; i++) {
     let tx3 = new Transaction(yanivWalletAddress, barWalletAddress, 5, 2)
     tx3.signTransaction(yanivKey)
     micaCoin.addTransaction(tx3)
-    let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 10, 1)
-    tx4.signTransaction(barKey)
-    micaCoin.addTransaction(tx4)
+    // let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 10, 1)
+    // tx4.signTransaction(barKey)
+    // micaCoin.addTransaction(tx4)
     // micaCoin.minePendingTransactions(minerWalletAddress)
 }
 
-while (micaCoin.pendingTransactions.length > 0){
+while (micaCoin.pendingTransactions.length > 0){ // needs a change to exit or some thing
     micaCoin.minePendingTransactions(minerWalletAddress)
 }
+
+// micaCoin.transactionLookupInTheBlockchainBloomFilter(tx2)
+// micaCoin.transactionLookupInTheBlockchainBloomFilter('tx6')
     
-
-
-
-
-// for (let i = 0; i < 3; i++)
-//     micaCoin.minePendingTransactions(minerWalletAddress)
-
-// const tx3=new Transaction(barWalletAddress,yanivWalletAddress,50)
-// tx3.signTransaction(barKey)
-// micaCoin.addTransaction(tx3)
-// // micaCoin.minePendingTransactions(minerWalletAddress)
-
-// const tx4=new Transaction(yanivWalletAddress,barWalletAddress,25)
-// tx4.signTransaction(yanivKey)
-// micaCoin.addTransaction(tx4)
-// micaCoin.minePendingTransactions(minerWalletAddress)
-
-// let myRandTransaction = 0 
-// initiateTransactionArray = []
-
-// for (let i=0; i<28; i++)
-// {
-//     if(i%2){
-//         myRandTransaction = 1 + getRandomInt(micaCoin.getBalanceOfAddress(barWalletAddress))
-//         initiateTransactionArray[i] = new Transaction(barWalletAddress,yanivWalletAddress,myRandTransaction)
-//         initiateTransactionArray[i].signTransaction(barKey)
-//         micaCoin.addTransaction(initiateTransactionArray[i])
-//     }
-//     else
-//     {
-//         myRandTransaction = 1 + getRandomInt(micaCoin.getBalanceOfAddress(yanivWalletAddress))
-//         initiateTransactionArray[i]=new Transaction(yanivWalletAddress,barWalletAddress,myRandTransaction)
-//         initiateTransactionArray[i].signTransaction(yanivKey)
-//         micaCoin.addTransaction(initiateTransactionArray[i])
-//     }
-// }
-
-// micaCoin.minePendingTransactions(minerWalletAddress)
-
-// console.log(JSON.stringify(micaCoin, null, 4))
 console.log("Coin Capacity: " + micaCoin.coinCapacity)
 console.log("Total Burned: " + micaCoin.totalBurned)
 console.log("Total Supply: " + micaCoin.totalSupply)
@@ -96,5 +54,7 @@ console.log("Total mined: " + micaCoin.totalMined)
 console.log('Balance of miner: ', micaCoin.getBalanceOfAddress(minerWalletAddress))
 console.log('Balance of bar: ', micaCoin.getBalanceOfAddress(barWalletAddress))
 console.log('Balance of yaniv: ', micaCoin.getBalanceOfAddress(yanivWalletAddress))
+
+// console.log(barWalletAddress)
 
 

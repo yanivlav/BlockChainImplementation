@@ -36,3 +36,14 @@ console.log("this is check")
 
 console.log(check)
 
+const { PartitionedBloomFilter } = require('bloom-filters')
+// create a PartitionedBloomFilter of size 10 with 5 hash functions
+const filter = new PartitionedBloomFilter(10, 5)
+
+// add some value in the filter
+filter.add((tx1.amount+tx1.compensation).toString())
+filter.add((tx2.amount+tx2.compensation).toString())
+
+// lookup for some data
+console.log(filter.has((tx3.amount + tx4.compensation).toString())) // output: true
+console.log(filter.has('daniel')) // output: false
