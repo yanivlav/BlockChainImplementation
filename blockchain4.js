@@ -138,17 +138,8 @@ class Blockchain {
     block.mineBlock(this.difficulty)
     this.chain.push(block)
     this.memPool = []
-
-
-    // function sleep(milliseconds) {
-    //   const date = Date.now();
-    //   let currentDate = null;
-    //   do {
-    //     currentDate = Date.now();
-    //   } while (currentDate - date < milliseconds);
-    // }
-    // sleep(this.secondsBetweenBlocks * 1000);
-
+    
+    this.sleep(this.secondsBetweenBlocks * 1000) //change this.secondsBetweenBlocks
     this.printBlockDetails(block)
 
   }
@@ -202,7 +193,6 @@ class Blockchain {
     }
     return true
   }
-
   transactionLookupInTheBlockchainBloomFilter(transaction) {// spv check
     let possibleBlocks = []
     if (!(transaction instanceof Transaction)) {
@@ -214,7 +204,6 @@ class Blockchain {
         possibleBlocks.push(currentBlock)
       }
     }
-
     console.log("\nRunning SPV")
     for (let i = 0; i < possibleBlocks.length; i++) {
       if (this.myVerify(transaction, possibleBlocks[i])) {
@@ -224,7 +213,6 @@ class Blockchain {
     }
     console.log("Transaction does not exist!\n")
   }
-
   updateSumOfMinedCoins() {
     if (this.totalSupply > 20) {
       this.totalSupply -= 20
@@ -246,19 +234,8 @@ class Blockchain {
     // console.log(JSON.stringify(block, null, 4))
     console.log('=====================================================================================================================================================================================================')
 
-    // var x = block
-    // function omitKeys(obj, keys) {
-    //   var dup = {};
-    //   for (var key in obj) {
-    //     if (keys.indexOf(key) == -1) {
-    //       dup[key] = obj[key];
-    //     }
-    //   }
-    //   return dup;
-    // }
-
-    // console.log(JSON.stringify(omitKeys(x, ['tree']) ,null, 4))
-    console.log('===============================================================================================================================================================================')
+    this.printBlockJson(block)
+    
   }
   burn(amount) {
     if (this.totalSupply >= amount) {
@@ -280,8 +257,31 @@ class Blockchain {
     console.log('To:' + transaction.toAddress)
     console.log('Amount:' + transaction.amount)
     console.log('Signature:' + transaction.signature)
-    console.log('=====================================================================================================================================================================================================')
+    console.log('===============================================================================================================================================================================')
   }
+  printBlockJson(block){
+        var x = block
+        function omitKeys(obj, keys) {
+          var dup = {};
+          for (var key in obj) {
+            if (keys.indexOf(key) == -1) {
+              dup[key] = obj[key];
+            }
+          }
+          return dup;
+        }
+
+        console.log(JSON.stringify(omitKeys(x, ['tree','filter']), null, 4))
+        console.log('===============================================================================================================================================================================')
+  }
+  sleep(milliseconds){
+    const date = Date.now();
+    let currentDate = null;
+    do {
+      currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
+  }
+  
 
 }
 
