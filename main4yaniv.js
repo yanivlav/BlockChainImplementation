@@ -12,26 +12,22 @@ const minerKey = ec.keyFromPrivate(' 35c6745760526113b88210ad543fbd9422dd4d9f2b6
 const minerWalletAddress = minerKey.getPublic('hex')
 
 let micaCoin = new Blockchain()
-//miner get 200 coins
+//miner get 200 coins //starts from  block 2 because the first is genesis
 for (let i = 0; i < 10; i++)
     micaCoin.minePendingTransactions(minerWalletAddress)
 
 //send to 2 wallet 100 each
 const tx1 = new Transaction(minerWalletAddress, yanivWalletAddress, 100, 0)
 tx1.signTransaction(minerKey)
-//send to p2p
 micaCoin.addTransaction(tx1)
+
 const tx2 = new Transaction(minerWalletAddress, barWalletAddress, 100, 0)
 tx2.signTransaction(minerKey)
 micaCoin.addTransaction(tx2)
 micaCoin.minePendingTransactions(minerWalletAddress)
 
-console.log('Balance of miner: ', micaCoin.getBalanceOfAddress(minerWalletAddress))
-console.log('Balance of bar: ', micaCoin.getBalanceOfAddress(barWalletAddress))
-console.log('Balance of yaniv: ', micaCoin.getBalanceOfAddress(yanivWalletAddress))
 
-
-for (let i = 0; i < 15; i++) {
+for (let i = 0; i < 30; i++) {
     let tx3 = new Transaction(yanivWalletAddress, barWalletAddress, 5, 2)
     tx3.signTransaction(yanivKey)
     micaCoin.addTransaction(tx3)
@@ -41,15 +37,10 @@ for (let i = 0; i < 15; i++) {
     micaCoin.minePendingTransactions(minerWalletAddress)
 }
 
-while (micaCoin.pendingTransactions.length > 0){ // needs a change to exit or some thing
-    micaCoin.minePendingTransactions(minerWalletAddress)
-}
+// while (micaCoin.pendingTransactions.length > 0){ wont work
+//     micaCoin.minePendingTransactions(minerWalletAddress)
+// }
 
-
-let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 400, 1)
-tx4.signTransaction(barKey)
-micaCoin.addTransaction(tx4)
-micaCoin.minePendingTransactions(minerWalletAddress) // no funds for transacrtion
 
 console.log("Coin Capacity: " + micaCoin.coinCapacity)
 console.log("Total Burned: " + micaCoin.totalBurned)
@@ -59,9 +50,27 @@ console.log('Balance of miner: ', micaCoin.getBalanceOfAddress(minerWalletAddres
 console.log('Balance of bar: ', micaCoin.getBalanceOfAddress(barWalletAddress))
 console.log('Balance of yaniv: ', micaCoin.getBalanceOfAddress(yanivWalletAddress))
 
-// console.log(barWalletAddress)
-// micaCoin.transactionLookupInTheBlockchainBloomFilter(tx1)
-// micaCoin.transactionLookupInTheBlockchainBloomFilter('tx6')
 
-micaCoin.transactionLookupInTheBlockchainBloomFilter('tx4')//problem bug unresolved
-console.log("tx4 = " + tx4)
+
+//Running minded transaction SPV demo
+let spvDemo = new Transaction(barWalletAddress, yanivWalletAddress, 5, 1)
+spvDemo.signTransaction(barKey)
+micaCoin.addTransaction(spvDemo)
+micaCoin.minePendingTransactions(minerWalletAddress)
+micaCoin.transactionLookupInTheBlockchainBloomFilter(spvDemo)//Transaction is the minded
+
+//Running SPV demo on a transaction that has been mining yet
+let spvDemo2 = new Transaction(yanivWalletAddress, barWalletAddress, 30, 1)
+spvDemo2.signTransaction(yanivKey)
+micaCoin.addTransaction(spvDemo2)
+micaCoin.transactionLookupInTheBlockchainBloomFilter(spvDemo2)
+
+//Running SPV demo on a transaction that is not instance of Transaction
+micaCoin.transactionLookupInTheBlockchainBloomFilter('tx1')
+
+//Running demo of transaction with  out sufficient funds in the wallet
+let overDraftTransactionDEmo = new Transaction(barWalletAddress, yanivWalletAddress, 1000, 1)
+overDraftTransactionDEmo.signTransaction(barKey)
+micaCoin.addTransaction(overDraftTransactionDEmo)
+micaCoin.minePendingTransactions(minerWalletAddress)
+

@@ -49,23 +49,20 @@ class Block {
     this.filter = filter
   }
   calculateHash() {
-    return SHA256(this.previousHash + this.timestamp + JSON.stringify(this.transactions) + this.nonce + this.tree + this.root + this.filter).toString()
+    return SHA256(this.previousHash + this.timestamp + JSON.stringify(this.transactions)
+      + this.nonce + this.tree + this.root + this.filter).toString()
   }
   mineBlock(difficulty) {
     while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join('0')) {
       this.nonce++
       this.hash = this.calculateHash()
     }
-
     console.log('Nonce: ' + this.nonce)
   }
   hasValidTransaction() {
-    for (const tx of this.transactions) {
-      if (!tx.isValid()) {
+    for (const tx of this.transactions) 
+      if (!tx.isValid()) 
         return false
-      }
-
-    }
     return true
   }
 }
@@ -75,7 +72,7 @@ class Block {
 class Blockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()]
-    this.difficulty = 3
+    this.difficulty = 4
     this.pendingTransactions = []
     this.memPool = []
     this.miningReward = 20
@@ -96,41 +93,61 @@ class Blockchain {
     let j = 0
     let rewardFromCompensation = 0
     let burnAmount = 0
+
+    // Comparator sorting
+    // The goal is to help the miner to choose transactions that wallet owners prioritized
     this.pendingTransactions.sort((a, b) => a.compensation - b.compensation)
 
-    while (this.pendingTransactions.length > 0 && j < 2) { //why 2 and not 4 burn is a transaction?
+    // Fixed size for the block, rewardTX, burnedTX, 
+    // Two more from pending by priority with compensation or with out 
+    while (this.pendingTransactions.length > 0 && j < 2) { 
+      //If there were a compensation meaning wallet owner prioritized the transaction
       if (this.pendingTransactions[this.pendingTransactions.length - 1].compensation > 0) {
-
         let mytrans = this.pendingTransactions.pop()
-        if (mytrans.compensation > 1) {
-          burnAmount += mytrans.compensation - 1
 
-        }
+        //Calculation of  burning and fees
+        // if (mytrans.compensation > 1){ //why buren only from 2 and on and not from 1?
+        burnAmount += mytrans.compensation - 1
+        // }
 
-        rewardFromCompensation += mytrans.compensation - burnAmount
+        rewardFromCompensation += mytrans.compensation - burnAmount // always equal to 1 right?
         burnAmount = 0
         mytrans.amount -= mytrans.compensation
         this.memPool.push(mytrans)
       }
-      else {
-        this.memPool.push(this.pendingTransactions.shift())
+      else { //No prioritizing for the transaction
+        let mytrans = this.pendingTransactions.shift()
+        this.memPool.push(mytrans)
       }
       j++;
     }
 
-    const rewardTX = new Transaction(null, miningRewardAddress, this.miningReward + rewardFromCompensation, 0, "Mining Reward: " + this.miningReward + " coins, Compensation: " + rewardFromCompensation)
+    const rewardTX = new Transaction(null, miningRewardAddress, this.miningReward +
+      rewardFromCompensation, 0, "Mining Reward: " + this.miningReward + " coins, Compensation: " + rewardFromCompensation)
     this.memPool.push(rewardTX)
-    const burnTX = new Transaction(null, this.burnAddress, 1 * (this.chain.length) + burnAmount, 0, "Burned Coins by block: " + (this.chain.length) + ", Burned by too high gas fee (compensation > 1): " + burnAmount)
+
+
+    const burnTX = new Transaction(null, this.burnAddress, 1 * (this.chain.length) +
+      burnAmount, 0, "Burned Coins by block: " + (this.chain.length) + ", Burned by too high gas fee (compensation > 1): " + burnAmount)
     this.burn(burnTX.amount) // what is it
     this.memPool.push(burnTX)
 
-    const leaves = this.memPool.map(x => SHA256(x))
+    const leaves = this.memPool.map(x => SHA256(x).toString())
     const tree = new MerkleTree(leaves, SHA256)
     const root = tree.getRoot().toString('hex')
-    const filter = new PartitionedBloomFilter(10, 5)
-    filter.add(rewardTX.calculateHash())
-    for (const x of this.memPool) {
-      filter.add(x.calculateHash())
+    const filter = new PartitionedBloomFilter(50, 5)
+
+    //think if to sing burnTX and rewardTX to the filter ?  
+    //pay attention that burnTX and rewardTX has no signing,
+    // if so deferent approach with filter and signature
+
+    // filter.add(rewardTX.calculateHash())
+
+    //Filling filter with real client transaction, no rewardTx and no burnTX
+    for (let i = 0; i < 2; i++) { 
+      if (!(this.memPool[i].signature === undefined)) {
+        filter.add(this.memPool[i].signature.toString())
+      }
     }
 
     this.updateSumOfMinedCoins()
@@ -138,7 +155,6 @@ class Blockchain {
     block.mineBlock(this.difficulty)
     this.chain.push(block)
     this.memPool = []
-
 
     // function sleep(milliseconds) {
     //   const date = Date.now();
@@ -148,43 +164,37 @@ class Blockchain {
     //   } while (currentDate - date < milliseconds);
     // }
     // sleep(this.secondsBetweenBlocks * 1000);
-
     this.printBlockDetails(block)
-
   }
   getBalanceOfAddress(address) {
     let balance = 0
     for (const block of this.chain) {
       for (const trans of block.transactions) {
         if (trans.fromAddress === address) {
-          balance -= trans.amountSender
-          // balance -= trans.amount
-
+          balance -= trans.amountSender // Amount sender include prioritizing 
         }
         if (trans.toAddress === address) {
-          balance += trans.amountReceiver
-          // balance += trans.amount
+          balance += trans.amountReceiver // Amount sender doesn't include prioritizing 
         }
       }
     }
     return balance
   }
   addTransaction(transaction) {
-    if (!transaction.fromAddress || !transaction.toAddress) {
+    if (!transaction.fromAddress || !transaction.toAddress) 
       throw new Error('Transaction must have from and to addresses')
-    }
-    if (!transaction.isValid()) {
-      throw new Error('Cannont add invalid transaction to the chain')
-    }
+    
+    if (!transaction.isValid())
+      throw new Error('Cannot add invalid transaction to the chain')
 
     let balance = this.getBalanceOfAddress(transaction.fromAddress)
-    if (balance <= 0) {
+    if (balance <= 0)
       throw new Error('No sufficient funds to preform transaction')
-    }
 
-    if (transaction.amount > balance) {
+    if (transaction.amount > balance)
       throw new Error('No sufficient funds to preform transaction')
-    }
+
+    console.log("Transaction in pending to be minded")
     this.transactionDetails(transaction)
     this.pendingTransactions.push(transaction)
   }
@@ -204,25 +214,30 @@ class Blockchain {
   }
 
   transactionLookupInTheBlockchainBloomFilter(transaction) {// spv check
-    let possibleBlocks = []
-    if (!(transaction instanceof Transaction)) {
-      console.log("Transaction is invalid or no transaction at all")
-    }
-    for (let i = 1; i < this.chain.length; i++) {
-      const currentBlock = this.chain[i]
-      if (currentBlock.filter.has(transaction.calculateHash()) === true) {
-        possibleBlocks.push(currentBlock)
-      }
-    }
-
+    console.log('=====================================================================================================================================================================================================')
     console.log("\nRunning SPV")
-    for (let i = 0; i < possibleBlocks.length; i++) {
-      if (this.myVerify(transaction, possibleBlocks[i])) {
-        console.log(i)
-        console.log("Transaction is verified in the blockchain\n")
-      }
+    if (!(transaction instanceof Transaction)) {
+      return console.log("Input is not instanceof Transaction")
     }
-    console.log("Transaction does not exist!\n")
+    for (let i = 0; i < this.chain.length; i++) { // Checking BloomFilter ,  i!=1 becuase genesis block has no filter
+      const currentBlock = this.chain[i]
+      if (!(currentBlock.filter === undefined) && currentBlock.filter.has(transaction.signature) === true) 
+        if (this.myVerify(transaction, currentBlock, i)) //Running Proof and verification on the MerkeTree
+          return
+    }
+    return console.log("Transaction does not exist in the BlockChain, it might be pending for mining!\n")
+  }
+
+  myVerify(transaction, possibleBlocks, blockNumber) {
+    const leaf = SHA256(transaction).toString()
+    const root = possibleBlocks.tree.getRoot().toString('hex')
+    const proof = possibleBlocks.tree.getProof(leaf)
+    if (possibleBlocks.tree.verify(proof, leaf, root)){
+      console.log("Transaction is verified in the blockchain, Block Number: " + blockNumber)
+      console.log("Tree Proof:\n")
+      console.log(proof)
+    }
+    return possibleBlocks.tree.verify(proof, leaf, root)
   }
 
   updateSumOfMinedCoins() {
@@ -236,7 +251,7 @@ class Blockchain {
   getSumOfMindedCoins() {
     return sumCoinMinded
   }
-  compareCompensation(a, b) {
+  compareCompensation(a, b) { // Comparator
     return a.compensation - b.compensation
   }
   printBlockDetails(block) {
@@ -246,16 +261,16 @@ class Blockchain {
     // console.log(JSON.stringify(block, null, 4))
     console.log('=====================================================================================================================================================================================================')
 
-    // var x = block
-    // function omitKeys(obj, keys) {
-    //   var dup = {};
-    //   for (var key in obj) {
-    //     if (keys.indexOf(key) == -1) {
-    //       dup[key] = obj[key];
-    //     }
-    //   }
-    //   return dup;
-    // }
+    var x = block
+    function omitKeys(obj, keys) {
+      var dup = {};
+      for (var key in obj) {
+        if (keys.indexOf(key) == -1) {
+          dup[key] = obj[key];
+        }
+      }
+      return dup;
+    }
 
     // console.log(JSON.stringify(omitKeys(x, ['tree']) ,null, 4))
     console.log('===============================================================================================================================================================================')
@@ -267,13 +282,7 @@ class Blockchain {
     } else
       throw new Error('Cannot burn more coins')
   }
-  myVerify(transaction, possibleBlocks) {
-    const leaf = SHA256(transaction)
-    const root = possibleBlocks.tree.getRoot().toString('hex')
-    const proof = possibleBlocks.tree.getProof(leaf)
-    console.log(possibleBlocks.tree.verify(proof, leaf, root))
-    return possibleBlocks.tree.verify(proof, leaf, root)
-  }
+
   transactionDetails(transaction) {
     console.log('##############A new transaction was made##############')
     console.log('From:' + transaction.fromAddress)
@@ -282,7 +291,6 @@ class Blockchain {
     console.log('Signature:' + transaction.signature)
     console.log('=====================================================================================================================================================================================================')
   }
-
 }
 
 
