@@ -5,6 +5,9 @@
 ## ℹ️ Overview
 A simple blockchain implements MerkelTree and Bloomfilter written in node.js
 
+Simple output of miner:
+![image](https://user-images.githubusercontent.com/22189126/179813496-e5a539ef-3d45-42e6-aaf8-05adf69d95cd.png)
+
 
 ***For Begginers***: Go trough Step 0-4 for better understanding.
 Make sure that you are fimiliar with all concepts in stage before moving on to the next one.
