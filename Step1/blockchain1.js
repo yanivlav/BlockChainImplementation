@@ -30,11 +30,11 @@ class Blockchain{
       newBlock.hash=newBlock.calculateHash();
       this.chain.push(newBlock)
     }
-    isChainValid(){
+    
+	isChainValid(){
        for (let i = 1; i < this.chain.length; i++) {
          const currentBlock=this.chain[i]
-         console.log("this is blooooooooooooooooooook " + currentBlock)
-
+         // console.log("Block No.: " + currentBlock)
          const previousBlock=this.chain[i-1]
          if(currentBlock.hash !== currentBlock.calculateHash()){
           return false

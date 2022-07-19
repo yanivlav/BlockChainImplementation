@@ -106,12 +106,12 @@ class Blockchain {
         let mytrans = this.pendingTransactions.pop()
 
         //Calculation of  burning and fees
-        // if (mytrans.compensation > 1){ //why buren only from 2 and on and not from 1?
-        burnAmount += mytrans.compensation - 1
-        // }
+        if (mytrans.compensation > 1){ //why buren only from 2 and on and not from 1?i save 1 to burn only to burn
+          burnAmount += mytrans.compensation - 1
+        }
 
-        rewardFromCompensation += mytrans.compensation - burnAmount // always equal to 1 right?
-        burnAmount = 0
+        rewardFromCompensation += mytrans.compensation - burnAmount // always equal to 1 right?yes
+        // burnAmount = 0
         mytrans.amount -= mytrans.compensation
         this.memPool.push(mytrans)
       }
@@ -126,10 +126,9 @@ class Blockchain {
       rewardFromCompensation, 0, "Mining Reward: " + this.miningReward + " coins, Compensation: " + rewardFromCompensation)
     this.memPool.push(rewardTX)
 
-
     const burnTX = new Transaction(null, this.burnAddress, 1 * (this.chain.length) +
       burnAmount, 0, "Burned Coins by block: " + (this.chain.length) + ", Burned by too high gas fee (compensation > 1): " + burnAmount)
-    this.burn(burnTX.amount) // what is it
+    this.burn(burnAmount) // what is it
     this.memPool.push(burnTX)
 
     const leaves = this.memPool.map(x => SHA256(x).toString())
@@ -258,21 +257,13 @@ class Blockchain {
     console.log('Block: ' + this.chain.length, ' ,Difficulty: ' + this.difficulty)
     console.log('Total coins: ' + this.coinCapacity + ', Total mined: ' + this.totalMined)
     console.log('Total supply: ' + this.totalSupply + ', Total burned: ' + this.totalBurned)
-    // console.log(JSON.stringify(block, null, 4))
+    
     console.log('=====================================================================================================================================================================================================')
-    var x = block
-    function omitKeys(obj, keys) {
-      var dup = {};
-      for (var key in obj) {
-        if (keys.indexOf(key) == -1) {
-          dup[key] = obj[key];
-        }
-      }
-      return dup;
-    }
-    // console.log(JSON.stringify(omitKeys(x, ['tree']) ,null, 4))
+    console.log(JSON.stringify(block, null, 4))
+    // var x = block
+    // this.printBlockJson(block)
     console.log('===============================================================================================================================================================================')
-    this.printBlockJson(block)
+    
   }
   burn(amount) {
     if (this.totalSupply >= amount) {

@@ -16,6 +16,13 @@ const minerKey = ec.keyFromPrivate(' 35c6745760526113b88210ad543fbd9422dd4d9f2b6
 const minerWalletAddress = minerKey.getPublic('hex')
 
 let micaCoin = new Blockchain()
+// var micaCoin = new Blockchain()
+//let micaCoin = new Blockchain()
+// module.exports.micaCoin = micaCoin
+
+
+
+
 // //miner get 200 coins
 // for (let i = 0; i < 10; i++)
 //     micaCoin.minePendingTransactions(minerWalletAddress)
@@ -42,7 +49,7 @@ let micaCoin = new Blockchain()
 //     let tx4 = new Transaction(barWalletAddress, yanivWalletAddress, 10, 1)
 //     tx4.signTransaction(barKey)
 //     micaCoin.addTransaction(tx4)
-//     micaCoin.minePendingTransactions(minerWalletAddress)
+//     mcaCoin.minePendingTransactions(minerWalletAddress)
 // }
 
 while (micaCoin.pendingTransactions.length > 0) { // needs a change to exit or some thing

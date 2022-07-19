@@ -1,7 +1,9 @@
 const topology = require('fully-connected-topology')
 const prompt = require("prompt-sync")();
-const lib = require("./main4yaniv.js");
-
+// const lib = require("./main4yaniv.js");
+const {exec} = require("child_process")
+const EC = require('elliptic').ec
+const ec = new EC('secp256k1')
 
 const {
     stdin,
@@ -42,8 +44,13 @@ topology(myIp, peerIps).on('connection', (socket, peerIp) => {
 
         if (message === 'RF') { //Run Full node
             // fullNode = me
+            // const minerKey = ec.keyFromPrivate(' 35c6745760526113b88210ad543fbd9422dd4d9f2b646fda22ed6c4a87060e12')
+            // const minerWalletAddress = minerKey.getPublic('hex')
+            
             const { Blockchain, Block, Transaction } = require('./blockchain4.js')
-            const main = require('./main4yaniv.js')
+            // exec('node p2p.js')
+            
+            
         }
 
         if (message === 'B') {
